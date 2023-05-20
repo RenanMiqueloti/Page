@@ -3,34 +3,6 @@ import type { NextComponentType } from "next";
 import Link from "next/link";
 import { promises } from "stream";
 
-async function GetGit()
-{
-    var api = async () => {
-        const response = await fetch('https://api.github.com/users/RenanMiqueloti/repos');
-        const data = await response.json();
-        return data
-        
-        
-        }
-              
-    
-    const api_data = await api();
-    var dados = await api_data.map(function(data){
-      const arraydados = [data.name,data.html_url]
-      return arraydados
-    
-    })
-    var all_api = Promise.all(dados).then(valores=>{
-      return valores;
-    })
-    
-    return all_api
- 
-      }
-
-var arrayesse = GetGit();
-console.log (arrayesse)
-
 
 
 const Projects: NextComponentType = () => {
