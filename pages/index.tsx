@@ -7,7 +7,6 @@ import {
   Skills,
 } from "../components";
 import Gifsection from "../components/Sections/Gif.section";
-import GitSection from "../components/Sections/Git.section";
 
 const Home: NextPage = () => {
   return (
@@ -17,7 +16,6 @@ const Home: NextPage = () => {
       <Skills />
       <Gifsection/>
       <Projects />
-      <GitSection/>
       
 
       <div className="flex justify-center">

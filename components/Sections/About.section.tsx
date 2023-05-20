@@ -14,8 +14,12 @@ const About: NextComponentType = () => {
           Estudante de Ciências da Computação
         </p>
 
-        <p className="mt-4 text-gray-400">
-          Desenvolvedor e Cientista de dados
+        <p className="mt-6 text-gray-400">
+        Olá! Meu nome é Renan e estou cursando Ciência da Computação. 
+
+Com experiência em desenvolvimento de software, programação, sistema de informação e prestação de serviços.
+
+Tenho habilidades em diversas linguagens de programação, como Python, Java e PHP, além de ter conhecimento em bancos de dados e ferramentas de gerenciamento de projetos. Sou apaixonado por tecnologia e estou sempre buscando aprender mais sobre as últimas tendências e inovações na área.
         </p>
 
         <Link href="https://www.linkedin.com/in/renanmiqueloti" passHref>
@@ -45,8 +49,8 @@ const About: NextComponentType = () => {
       <div className="hidden custom:block">
         <Image
           src="/assests/avatar.png"
-          width="200"
-          height="200"
+          width="950"
+          height="950"
           className="rounded-full"
           alt="avatar"
         />
