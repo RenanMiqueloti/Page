@@ -15,11 +15,8 @@ const About: NextComponentType = () => {
         </p>
 
         <p className="mt-6 text-gray-400">
-        Olá! Meu nome é Renan e estou cursando Ciência da Computação. 
+        Sou um Cientista de Dados especializado em machine learning, deep learning e análises preditivas. Ao longo da minha carreira, desenvolvi soluções como modelos de CNN para detecção de imagem, previsões de consumo de energia com árvores de decisão e algoritmos de detecção de falsificação. Com um foco em transformar dados em insights acionáveis, utilizo ferramentas como Python, TensorFlow e Scikit-learn para resolver problemas complexos e colocar modelos em produção, sempre buscando inovação e eficiência.
 
-Com experiência em desenvolvimento de software, programação, sistema de informação e prestação de serviços.
-
-Tenho habilidades em diversas linguagens de programação, como Python, Java e PHP, além de ter conhecimento em bancos de dados e ferramentas de gerenciamento de projetos. Sou apaixonado por tecnologia e estou sempre buscando aprender mais sobre as últimas tendências e inovações na área.
         </p>
 
         <Link href="https://www.linkedin.com/in/renanmiqueloti" passHref>
