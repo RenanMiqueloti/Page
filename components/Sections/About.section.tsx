@@ -11,11 +11,12 @@ const About: NextComponentType = () => {
       <div>
         <p className="text-3xl font-bold text-white">Renan Miqueloti</p>
         <p className="mt-1 text-lg text-gray-300">
-          Estudante de Ciências da Computação
+          Data Scientist e MLOps
         </p>
 
-        <p className="mt-4 text-gray-400">
-          Desenvolvedor e Cientista de dados
+        <p className="mt-6 text-gray-400">
+        Sou um Cientista de Dados especializado em machine learning, deep learning e análises preditivas. Ao longo da minha carreira, desenvolvi soluções como modelos de CNN para detecção de imagem, previsões de consumo de energia com árvores de decisão e algoritmos de detecção de falsificação. Com um foco em transformar dados em insights acionáveis, utilizo ferramentas como Python, TensorFlow e Scikit-learn para resolver problemas complexos e colocar modelos em produção, sempre buscando inovação e eficiência.
+
         </p>
 
         <Link href="https://www.linkedin.com/in/renanmiqueloti" passHref>
@@ -45,8 +46,8 @@ const About: NextComponentType = () => {
       <div className="hidden custom:block">
         <Image
           src="/assests/avatar.png"
-          width="200"
-          height="200"
+          width="950"
+          height="950"
           className="rounded-full"
           alt="avatar"
         />

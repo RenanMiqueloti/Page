@@ -45,7 +45,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               url: "https://www.linkedin.com/in/renanmiqueloti/",
               width: 800,
               height: 420,
-              alt: "Renan Miqueloti Developer",
+              alt: "Renan Miqueloti Data Scientist",
             },
           ],
         }}
@@ -54,7 +54,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           {
             property: "keywords",
             content:
-              "Developer, renan, miqueloti, renan miqueloti, web development, web developer, tech enthusiast",
+              "Developer, renan, miqueloti, renan miqueloti, web development, web developer, tech enthusiast, data science, dados",
           },
         ]}
       />
