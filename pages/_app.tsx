@@ -1,12 +1,9 @@
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
 
-import "@fontsource/jost/400.css";
-import "@fontsource/jost/500.css";
-import "@fontsource/jost/600.css";
-import "@fontsource/jost/700.css";
-import "@fontsource/sen/400.css";
-import "@fontsource/sen/700.css";
+import "@fontsource/jost";
+import "@fontsource/sen";
+
 
 import { NextSeo } from "next-seo";
 import Head from "next/head";
