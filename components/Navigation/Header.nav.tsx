@@ -12,7 +12,7 @@ const TextLink: NextComponentType<NextPageContext, {}, linkProps> = ({
   return (
     <a
       href={url}
-      className="cursor-pointer rounded-md px-4 py-[0.10rem] text-xl text-gray-200 duration-100 hover:bg-zinc-800"
+      className="text-gray-400 hover:text-white transition-colors duration-200 text-base"
     >
       {text}
     </a>
@@ -21,27 +21,25 @@ const TextLink: NextComponentType<NextPageContext, {}, linkProps> = ({
 
 const Header: NextComponentType = () => {
   return (
-    <header
-      className={`font-jost py-8 sm:flex sm:flex-row sm:items-center sm:justify-between`}
-    >
-      <p className="hidden sm:flex sm:flex-row sm:gap-x-3">
-        <TextLink text="Home" url="#" />
-        <TextLink text="Habilidades" url="#skills" />
-        <TextLink text="Acadêmico" url="#projects" />
-        <TextLink text="Projetos Git" url="#git" />
-        
-      </p>
+    <header className="max-w-6xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pt-12 pb-8">
+      <div className="flex items-center justify-between">
+        <nav className="hidden sm:flex items-center gap-8">
+          <TextLink text="Home" url="#" />
+          <TextLink text="Habilidades" url="#skills" />
+          <TextLink text="Projetos" url="#projects" />
+        </nav>
 
-      <Link href="https://github.com/RenanMiqueloti" passHref>
-        <a
-          className="float-right mr-2 rounded-lg bg-zinc-800 p-2 text-2xl text-white ring-zinc-300 transition-all duration-150 hover:ring-2 sm:float-none sm:mr-0"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="github-repo"
-        >
-          <VscGithubAlt />
-        </a>
-      </Link>
+        <Link href="https://github.com/RenanMiqueloti" passHref>
+          <a
+            className="text-gray-400 hover:text-white transition-colors duration-200"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="github-repo"
+          >
+            <VscGithubAlt size={24} />
+          </a>
+        </Link>
+      </div>
     </header>
   );
 };

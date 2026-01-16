@@ -1,10 +1,22 @@
 import type { NextComponentType } from "next";
-const Gifsection: NextComponentType = () => (
-    <div className="my-16 px-3 font-sen text-white" id="gif">
-        <h1 className="text-3xl font-bold text-white">Sort to Chill</h1>
-        <video autoPlay loop muted className="justify-content align-center">
-            <source src="./assests/sortvideo.mp4" type="video/mp4" />
-        </video>
 
-    </div>)
-export default Gifsection
+const Gifsection: NextComponentType = () => (
+    <section className="py-20 md:py-32 border-t border-gray-800" id="gif">
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
+            Sort to Chill
+        </h2>
+        <div className="rounded-lg overflow-hidden border border-gray-800">
+            <video 
+                autoPlay 
+                loop 
+                muted 
+                className="w-full max-w-4xl"
+                playsInline
+            >
+                <source src="./assests/sortvideo.mp4" type="video/mp4" />
+            </video>
+        </div>
+    </section>
+);
+
+export default Gifsection;

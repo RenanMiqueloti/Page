@@ -31,21 +31,21 @@ function MyApp({ Component, pageProps }: AppProps) {
                 `}
       </Script>
       <NextSeo
-        title="Renan Miqueloti"
-        titleTemplate="Renan Miqueloti"
-        defaultTitle="Renan Miqueloti"
-        description="Desenvolvedor web"
+        title="Renan Miqueloti - AI Engineer | Desenvolvedor de Agents"
+        titleTemplate="Renan Miqueloti - AI Engineer"
+        defaultTitle="Renan Miqueloti - AI Engineer | Desenvolvedor de Agents"
+        description="AI Engineer especializado no desenvolvimento de agents inteligentes e sistemas autônomos. Desenvolvo soluções utilizando LLMs, LangChain e frameworks modernos de AI."
         openGraph={{
           url: "https://renanmiqueloti.vercel.app/",
-          title: "Renan",
+          title: "Renan Miqueloti - AI Engineer | Desenvolvedor de Agents",
           description:
-            "Renan Miqueloti",
+            "AI Engineer especializado no desenvolvimento de agents inteligentes. Trabalho com LangChain, LLMs e criação de sistemas autônomos de AI.",
           images: [
             {
-              url: "https://www.linkedin.com/in/renanmiqueloti/",
-              width: 800,
-              height: 420,
-              alt: "Renan Miqueloti Data Scientist",
+              url: "https://renanmiqueloti.vercel.app/assests/avatar.png",
+              width: 1200,
+              height: 630,
+              alt: "Renan Miqueloti - AI Engineer e Desenvolvedor de Agents",
             },
           ],
         }}
@@ -54,7 +54,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           {
             property: "keywords",
             content:
-              "Developer, renan, miqueloti, renan miqueloti, web development, web developer, tech enthusiast, data science, dados",
+              "AI Engineer, Agent Developer, LangChain, LLM, Agents, Artificial Intelligence, Machine Learning, Data Science, Python, TensorFlow, Renan Miqueloti, desenvolvimento de agents, agentic AI, OpenAI, Claude, RAG, Prompt Engineering",
           },
         ]}
       />

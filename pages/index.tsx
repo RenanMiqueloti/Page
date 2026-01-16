@@ -6,21 +6,23 @@ import {
   Projects,
   Skills,
 } from "../components";
-import Gifsection from "../components/Sections/Gif.section";
 
 const Home: NextPage = () => {
   return (
-    <div className="px-2 sm:px-8 md:px-24 lg:px-48 xl:px-72">
+    <div className="min-h-screen">
       <Header />
-      <About />
-      <Skills />
-      <Gifsection/>
-      <Projects />
-      
-
-      <div className="flex justify-center">
-      
-      </div>
+      <main>
+        <About />
+        <Skills />
+        <Projects />
+        
+        <footer className="max-w-6xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 mt-32 mb-16 py-8 border-t border-gray-800">
+          <div className="text-center text-gray-500 text-sm">
+            <p>Desenvolvido por Renan Miqueloti</p>
+            <p className="mt-2 text-gray-600">AI Engineer & Agent Developer</p>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 };
