@@ -160,14 +160,12 @@ const TAB_CMDS = [
 ];
 
 type Props = {
-  showChrome?: boolean;
   initialBoot?: boolean;
   height?: number | string;
   className?: string;
 };
 
 export const AgentTerminal = ({
-  showChrome = false,
   initialBoot = true,
   height = 420,
   className = "",
@@ -497,21 +495,6 @@ export const AgentTerminal = ({
       style={{ height: typeof height === "number" ? `${height}px` : height }}
       className={`flex flex-col bg-zinc-950/85 backdrop-blur-md border border-zinc-800/80 rounded-lg overflow-hidden font-mono text-[13px] leading-[1.55] text-zinc-200 cursor-text ${className}`}
     >
-      {showChrome && (
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-zinc-800/80 bg-white/[0.025]">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-          <span className="ml-2.5 text-[11px] text-zinc-500">
-            ~/renan.agent — zsh
-          </span>
-          <span className="ml-auto flex items-center gap-1.5 text-emerald-400 text-[10px] tracking-widest">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor] animate-pulse-soft" />
-            ONLINE
-          </span>
-        </div>
-      )}
-
       <div
         ref={scrollRef}
         className="flex-1 px-3.5 py-3 overflow-y-auto overflow-x-hidden"
