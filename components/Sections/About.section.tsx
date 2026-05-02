@@ -1,98 +1,179 @@
-import type { NextComponentType } from "next";
-
 import Image from "next/image";
-import Link from "next/link";
+import { Reveal } from "../Misc/Reveal.component";
+import { Window } from "../Misc/Window.component";
+import { AgentTerminal } from "../Misc/AgentTerminal.component";
+import { useT } from "../../lib/useLocale";
 
-import { HiOutlineArrowNarrowRight } from "../Misc/Icons.collection";
+const About = () => {
+  const t = useT();
+  const a = t.about;
 
-const About: NextComponentType = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center py-16 md:py-24 overflow-hidden">
-      {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-pink-900/20 pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_70%)] pointer-events-none"></div>
-      
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-center">
-          {/* Text Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <div className="inline-block px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
-                <span className="text-purple-400 text-sm font-medium">AI Engineer</span>
-              </div>
-              
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight">
-                Renan Miqueloti
-                <span className="block mt-3 text-4xl md:text-5xl lg:text-6xl text-gray-400 font-normal">
-                  AI Engineer
-                </span>
-              </h1>
-              
-              <p className="text-xl md:text-2xl text-gray-300 leading-relaxed max-w-2xl">
-                Especializado no desenvolvimento de agents inteligentes e sistemas autônomos utilizando Large Language Models (LLMs).
-              </p>
-            </div>
+    <section
+      id="about"
+      className="relative overflow-hidden pt-12 md:pt-16 pb-20 md:pb-28"
+    >
+      {/* Top OS menubar */}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex items-center gap-4 sm:gap-6 py-2 border-b border-zinc-800/80 font-mono text-[11px] text-zinc-500">
+          <span className="text-emerald-400 font-bold tracking-[0.2em]">
+            ◆ renan.agent
+          </span>
+          <span className="hidden sm:inline">file</span>
+          <span className="hidden sm:inline">view</span>
+          <span className="hidden sm:inline">tools</span>
+          <span className="ml-auto flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor] animate-pulse-soft" />
+            agent: {t.header.statusOnline}
+          </span>
+        </div>
+      </div>
 
-            <div className="space-y-5 text-gray-400 leading-relaxed max-w-2xl text-lg">
-              <p>
-                Como <span className="text-white font-medium">AI Engineer</span>, desenvolvo agents inteligentes que combinam processamento de linguagem natural, raciocínio e tomada de decisão autônoma. Trabalho com frameworks modernos de agentic AI como LangChain e sistemas de RAG (Retrieval-Augmented Generation) para criar soluções que resolvem problemas complexos de forma autônoma.
-              </p>
+      {/* Único efeito de fundo: radial emerald sutil — sem scanlines+grid disputando */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 45% at 25% 30%, rgba(52,211,153,0.14), transparent 70%)",
+        }}
+      />
 
-              <p>
-                Minha expertise abrange desde <span className="text-purple-400 font-medium">desenvolvimento de agents</span> até <span className="text-purple-400 font-medium">MLOps e Data Science</span>, incluindo implementação e fine-tuning de modelos open source, integração com APIs de LLMs (OpenAI, Anthropic), uso de modelos open source e deployment de sistemas de AI em produção. Tenho experiência prática com Python, TensorFlow, PyTorch e arquiteturas de agentic AI.
-              </p>
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 mt-8">
+        <Reveal>
+          <p className="font-mono text-emerald-400 tracking-[0.25em] text-xs">
+            {a.eyebrow}
+            <span className="text-zinc-600 ml-3 normal-case tracking-wider">
+              {a.lastBuild} {new Date().toISOString().slice(0, 10)}
+            </span>
+          </p>
+        </Reveal>
 
-              <p>
-                Focado em criar agents que podem <span className="text-white">raciocinar</span>, <span className="text-white">aprender</span> e <span className="text-white">executar tarefas complexas</span> de forma autônoma, transformando dados em ações inteligentes através de sistemas de AI moderna.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Link href="https://www.linkedin.com/in/renanmiqueloti" passHref>
-                <a
-                  className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition-all duration-200 hover:scale-105 shadow-lg"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <span>LinkedIn</span>
-                  <HiOutlineArrowNarrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </a>
-              </Link>
-              <Link href="mailto:renanmiqueloti@gmail.com">
-                <a
-                  className="group inline-flex items-center gap-2 px-6 py-3 border border-gray-700 text-white rounded-lg font-medium hover:border-gray-600 hover:bg-gray-900/50 transition-all duration-200"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <span>Contato</span>
-                  <HiOutlineArrowNarrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </a>
-              </Link>
-            </div>
-          </div>
-
-          {/* Image */}
-          <div className="hidden lg:flex items-center justify-center">
-            <div className="relative">
-              {/* Circular purple background for round image */}
-              <div className="w-[360px] h-[360px] rounded-full bg-gradient-to-br from-purple-500/30 via-purple-600/30 to-purple-500/30 flex items-center justify-center shadow-2xl shadow-purple-500/20">
-                {/* Subtle glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-2xl -z-10"></div>
-                
-                {/* Round image with transparent background */}
-                <div className="relative w-[320px] h-[320px] rounded-full overflow-hidden">
+        <Reveal delay={80}>
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 items-center">
+            {/* Avatar — janela com vinheta CRT, sem wash verde no rosto */}
+            <div className="relative w-[180px] sm:w-[200px] shrink-0 self-start lg:self-center">
+              <div className="absolute -inset-6 bg-emerald-500/[0.10] rounded-full blur-3xl pointer-events-none" />
+              <Window title="operator.feed" className="relative">
+                <div className="relative aspect-square overflow-hidden bg-zinc-950">
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse 110% 110% at 30% 25%, #18181b 0%, #09090b 60%, #050608 100%)",
+                    }}
+                  />
                   <Image
-                    src="/assests/avatar.png"
-                    width="320"
-                    height="320"
-                    className="object-cover w-full h-full rounded-full"
-                    alt="Renan Miqueloti - AI Engineer"
+                    src="/assets/avatar.png"
+                    width={200}
+                    height={200}
+                    className="object-cover w-full h-full"
+                    style={{ filter: "hue-rotate(210deg) saturate(0.85) contrast(1.08) brightness(0.95)" }}
+                    alt="Renan Miqueloti"
                     priority
                   />
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ boxShadow: "inset 0 0 60px rgba(5,6,8,0.85)" }}
+                  />
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-25 mix-blend-overlay"
+                    style={{
+                      background:
+                        "repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.6) 2px, rgba(0,0,0,0.6) 3px)",
+                    }}
+                  />
+                  <div className="absolute top-1.5 left-2 font-mono text-[8px] tracking-[0.18em] text-emerald-400/80 uppercase pointer-events-none">
+                    REC ●
+                  </div>
+                  <div className="absolute bottom-1.5 right-2 font-mono text-[8px] tracking-wider text-zinc-500 pointer-events-none">
+                    320×320
+                  </div>
                 </div>
-              </div>
+                <div className="px-3 py-2 border-t border-zinc-800/80 flex items-center gap-1.5 font-mono text-[10px] text-zinc-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor] animate-pulse-soft" />
+                  {a.avatarFooter}
+                </div>
+              </Window>
             </div>
+
+            <h1 className="font-display text-6xl sm:text-7xl lg:text-[104px] font-semibold leading-[0.92] tracking-[-0.04em] text-zinc-50 [text-shadow:0_0_40px_rgba(52,211,153,0.22)]">
+              Renan
+              <span className="text-emerald-400">.</span>
+              <br />
+              <span className="text-zinc-500 font-normal">Miqueloti</span>
+            </h1>
           </div>
+        </Reveal>
+
+        <Reveal delay={120}>
+          <p className="mt-8 max-w-2xl text-xl text-zinc-300 leading-relaxed">
+            <span className="text-zinc-50">{a.subtitleStrong}</span>
+            {a.subtitleBody}
+          </p>
+        </Reveal>
+
+        <Reveal delay={140}>
+          <p className="mt-4 max-w-2xl text-sm text-zinc-500 italic leading-relaxed border-l-2 border-zinc-800 pl-4">
+            {a.bridgeForNonTech}
+          </p>
+        </Reveal>
+
+        <Reveal delay={180}>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a
+              href="#projects"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-400 text-zinc-950 rounded-md font-mono font-semibold text-sm hover:bg-emerald-300 transition-colors shadow-[0_0_18px_rgba(52,211,153,0.20)]"
+            >
+              <span>{a.ctaPrimary}</span>
+              <span className="transition-transform group-hover:translate-x-1">→</span>
+            </a>
+            <a
+              href="#contact"
+              className="inline-flex items-center gap-2 px-5 py-2.5 border border-zinc-700 text-zinc-300 rounded-md font-mono text-sm hover:border-emerald-500/50 hover:text-emerald-300 transition-colors"
+            >
+              {a.ctaSecondary}
+            </a>
+          </div>
+        </Reveal>
+
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
+          <Reveal delay={200}>
+            <Window
+              title={a.terminalWindowTitle}
+              hint={a.terminalHint}
+            >
+              <AgentTerminal height={420} />
+            </Window>
+          </Reveal>
+
+          <Reveal delay={260}>
+            <div className="flex flex-col gap-3 h-full">
+              <Window title={a.expWindowTitle}>
+                <div className="p-3.5 font-mono text-[12px] leading-[1.7]">
+                  {a.experience.map((row, i) => (
+                    <div key={row.tag + i} className={i < a.experience.length - 1 ? "mb-2" : ""}>
+                      <span className="text-emerald-400">{row.tag}</span>{" "}
+                      <span className="text-zinc-300">{row.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </Window>
+
+              <Window title={a.whoamiWindowTitle} className="flex-1">
+                <div className="p-3.5 font-mono text-[11.5px] leading-[1.85]">
+                  {a.whoami.map((row) => (
+                    <div key={row.key} className="grid grid-cols-[68px_auto] gap-x-2">
+                      <span className="text-zinc-500">{row.key}</span>
+                      <span className="text-zinc-300">
+                        <span className="text-emerald-400 mr-1.5">:</span>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Window>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -1,73 +1,63 @@
+import { Reveal } from "../Misc/Reveal.component";
+import { useT } from "../../lib/useLocale";
+
 const Skills = () => {
-  const skillCategories = [
-    {
-      title: "Agents & AI",
-      items: ["LangChain", "Agentic AI", "LLM Agents", "RAG", "Prompt Engineering"]
-    },
-    {
-      title: "LLMs & NLP",
-      items: ["OpenAI GPT", "Anthropic Claude", "Hugging Face", "Vector Databases", "Embeddings", "Open Source Models"]
-    },
-    {
-      title: "Model Training",
-      items: ["Fine-tuning", "Model Optimization", "Transfer Learning", "LoRA", "Model Training"]
-    },
-    {
-      title: "Development",
-      items: ["Python", "TensorFlow", "PyTorch", "TypeScript", "JavaScript", "SQL"]
-    },
-    {
-      title: "Machine Learning",
-      items: ["CNN", "Deep Learning", "Classification", "Regression", "Decision Trees", "Neural Networks"]
-    },
-    {
-      title: "MLOps & Cloud",
-      items: ["AWS", "GCP", "Docker", "Kubernetes", "CI/CD", "API Integration"]
-    },
-    {
-      title: "Data Engineering",
-      items: ["ETL", "Data Pipelines", "pandas", "NumPy", "Scikit-learn", "Data Analysis"]
-    }
-  ];
+  const t = useT();
+  const s = t.skills;
 
   return (
-    <section className="relative py-32 border-t border-gray-800" id="skills">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent pointer-events-none"></div>
-      
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 relative z-10">
-        <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            Habilidades & Conhecimentos
+    <section id="skills" className="relative py-24 md:py-32 border-t border-zinc-900">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+        <Reveal>
+          <p className="font-mono text-emerald-400 tracking-[0.25em] text-xs">{s.eyebrow}</p>
+          <h2 className="mt-3 font-display text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-zinc-50 leading-[1]">
+            {s.title}
           </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Tecnologias e ferramentas que utilizo no desenvolvimento de agents e soluções de AI
-          </p>
-        </div>
+          <p className="mt-5 max-w-xl text-zinc-400 leading-relaxed">{s.intro}</p>
+        </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {skillCategories.map((category, index) => (
-            <div 
-              key={index} 
-              className="group p-8 bg-gradient-to-br from-gray-900/50 to-gray-900/30 border border-gray-800 rounded-2xl hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1"
-            >
-              <h3 className="text-xl font-semibold text-white mb-6 group-hover:text-purple-400 transition-colors">
-                {category.title}
-              </h3>
-              <ul className="space-y-3">
-                {category.items.map((item, itemIndex) => (
-                  <li 
-                    key={itemIndex} 
-                    className="text-gray-400 hover:text-gray-300 transition-colors flex items-center gap-2"
-                  >
-                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900 border border-zinc-900 rounded-lg overflow-hidden">
+          {s.categories.map((cat, i) => (
+            <Reveal key={cat.title} delay={i * 60}>
+              <div className="h-full p-7 md:p-8 bg-zinc-950 hover:bg-zinc-900/40 transition-colors">
+                <div className="flex items-baseline gap-3 mb-1">
+                  <span className="font-mono text-[11px] text-emerald-400 tracking-[0.2em]">
+                    NODE_{cat.eyebrow}
+                  </span>
+                  <span className="font-mono text-[10px] text-zinc-600">
+                    {cat.file}
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl text-zinc-50 tracking-tight mb-5">
+                  {cat.title}
+                </h3>
+                <ul className="flex flex-wrap gap-2.5">
+                  {cat.items.map((item) => (
+                    <li
+                      key={item}
+                      className="px-3 py-1.5 text-sm text-zinc-400 border border-zinc-800 rounded-md font-mono hover:border-emerald-500/40 hover:text-emerald-300 transition-colors"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
           ))}
         </div>
+
+        <Reveal delay={120}>
+          <div className="mt-8 flex justify-center">
+            <a
+              href="#contact"
+              className="group inline-flex items-center gap-2 font-mono text-sm text-zinc-500 hover:text-emerald-300 transition-colors"
+            >
+              <span>$ trabalhando em algo assim?</span>
+              <span className="text-emerald-400">vamos conversar</span>
+              <span className="transition-transform group-hover:translate-x-1">→</span>
+            </a>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

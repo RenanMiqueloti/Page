@@ -1,19 +1,17 @@
 {
-  "name": "page",
+  "name": "renan-portfolio",
   "private": true,
   "engines": {
-    "node": "24.x"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fontsource/jost": "^5.2.8",
-    "@fontsource/sen": "^5.2.8",
-    "axios": "^1.13.2",
     "next": "12.3.4",
     "next-seo": "^5.15.0",
     "react": "18.2.0",
