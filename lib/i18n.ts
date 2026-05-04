@@ -251,14 +251,23 @@ export const MESSAGES: Record<Locale, Messages> = {
         "Repositórios e experimentos públicos em retrieval, ML aplicado e sistemas com agentes. Os projetos principais permanecem confidenciais.",
       featured: {
         label: "DESTAQUE",
-        title: "agents-cookbook",
+        title: "agents-AI",
         description:
-          "Coletânea de implementações de agentes em Python com LangChain/LangGraph e LLMs (Claude, OpenAI). Inclui RAG, tool-use, MCP e padrões de prompting para sistemas de produção.",
-        tags: ["LangGraph", "LangChain", "MCP", "RAG", "Python"],
-        url: "https://github.com/RenanMiqueloti/agents-cookbook",
+          "Referência de padrões de produção para agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL, multi-provider (Ollama / Claude / OpenAI) e evals com LLM-as-judge — tudo em um único repositório executável.",
+        tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
+        url: "https://github.com/RenanMiqueloti/agents-AI",
         cta: "Ver no GitHub",
       },
       secondary: [
+        {
+          label: "DESTAQUE",
+          title: "rag-chatbot",
+          description:
+            "Pipeline RAG de produção com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
+          tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
+          url: "https://github.com/RenanMiqueloti/rag-chatbot",
+          cta: "Ver no GitHub",
+        },
         {
           label: "INDISPONÍVEL",
           title: "semantic-search-arxiv",
@@ -464,14 +473,23 @@ export const MESSAGES: Record<Locale, Messages> = {
         "Public repos and experiments in retrieval, applied ML and agent-based systems. The primary projects remain confidential.",
       featured: {
         label: "FEATURED",
-        title: "agents-cookbook",
+        title: "agents-AI",
         description:
-          "Collection of agent implementations in Python with LangChain/LangGraph and LLMs (Claude, OpenAI). Covers RAG, tool-use, MCP and prompting patterns for production systems.",
-        tags: ["LangGraph", "LangChain", "MCP", "RAG", "Python"],
-        url: "https://github.com/RenanMiqueloti/agents-cookbook",
+          "Production patterns reference for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL, multi-provider (Ollama / Claude / OpenAI) and LLM-as-judge evals — all in a single runnable repository.",
+        tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
+        url: "https://github.com/RenanMiqueloti/agents-AI",
         cta: "View on GitHub",
       },
       secondary: [
+        {
+          label: "FEATURED",
+          title: "rag-chatbot",
+          description:
+            "Production RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
+          tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
+          url: "https://github.com/RenanMiqueloti/rag-chatbot",
+          cta: "View on GitHub",
+        },
         {
           label: "UNAVAILABLE",
           title: "semantic-search-arxiv",

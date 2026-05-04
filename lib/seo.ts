@@ -3,11 +3,14 @@ const NAME = "Renan Miqueloti";
 const URL_ROOT = `${SITE_URL}/`;
 
 export const OG_IMAGE = {
-  url: `${SITE_URL}/assets/avatar.png`,
-  width: 600,
-  height: 600,
-  alt: "Renan Miqueloti - AI Engineer",
+  url: `${SITE_URL}/og.png`,
+  width: 1200,
+  height: 630,
+  alt: "Renan Miqueloti — AI Engineer · agents, RAG, observability",
+  type: "image/png",
 };
+
+export const AVATAR_URL = `${SITE_URL}/assets/avatar.png`;
 
 export const WEBSITE_JSON_LD = {
   "@context": "https://schema.org",
@@ -22,7 +25,7 @@ export const PERSON_JSON_LD = {
   "@type": "Person",
   name: NAME,
   url: URL_ROOT,
-  image: OG_IMAGE.url,
+  image: AVATAR_URL,
   jobTitle: "AI Engineer",
   description:
     "Renan Miqueloti constrói agentes com tool-use, MCP, RAG e modelos preditivos — com evals, observabilidade e foco em produção.",
