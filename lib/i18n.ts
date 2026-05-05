@@ -268,24 +268,6 @@ export const MESSAGES: Record<Locale, Messages> = {
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
           cta: "Ver no GitHub",
         },
-        {
-          label: "INDISPONÍVEL",
-          title: "semantic-search-arxiv",
-          description:
-            "Sistema de busca híbrida (dense + BM25 + RRF) sobre 74 papers seminais de IA. Métricas: R@5=97%, MRR=0.88, ~12ms/query · IC 95% bootstrap · n=30 queries (PT-BR + EN). Execução local em Hugging Face Space.",
-          tags: ["e5-multilingual", "BM25 + RRF", "Gradio"],
-          url: "https://huggingface.co/spaces/RenanMiqueloti/semantic-search-arxiv",
-          cta: "Abrir demo",
-        },
-        {
-          label: "INDISPONÍVEL",
-          title: "flight-delays",
-          description:
-            "Modelo de classificação para predição de atraso de voos, com explicações locais via SHAP. Servido em interface web com Streamlit.",
-          tags: ["scikit-learn", "SHAP", "Streamlit"],
-          url: "https://renan-flight-delays.streamlit.app",
-          cta: "Abrir demo",
-        },
       ],
       seeAllCta: "$ ver todos os repos no GitHub",
       seeAllUrl: SHARED_FEATURED_URL,
@@ -489,24 +471,6 @@ export const MESSAGES: Record<Locale, Messages> = {
           tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
           cta: "View on GitHub",
-        },
-        {
-          label: "UNAVAILABLE",
-          title: "semantic-search-arxiv",
-          description:
-            "Hybrid search system (dense + BM25 + RRF) over 74 seminal AI papers. Metrics: R@5=97%, MRR=0.88, ~12ms/query · 95% bootstrap CI · n=30 queries (PT-BR + EN). Runs locally on Hugging Face Space.",
-          tags: ["e5-multilingual", "BM25 + RRF", "Gradio"],
-          url: "https://huggingface.co/spaces/RenanMiqueloti/semantic-search-arxiv",
-          cta: "Open demo",
-        },
-        {
-          label: "UNAVAILABLE",
-          title: "flight-delays",
-          description:
-            "Classification model for flight delay prediction with local SHAP explanations. Served through a Streamlit web interface.",
-          tags: ["scikit-learn", "SHAP", "Streamlit"],
-          url: "https://renan-flight-delays.streamlit.app",
-          cta: "Open demo",
         },
       ],
       seeAllCta: "$ see all repos on GitHub",
