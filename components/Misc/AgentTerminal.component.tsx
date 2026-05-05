@@ -89,9 +89,9 @@ const TREE = `~/renan.agent/
 ├── experience.log
 ├── contact.txt
 ├── projects/
-│   ├── agents-cookbook/
-│   ├── semantic-search-arxiv/
-│   └── flight-delays/
+│   ├── agents-AI/
+│   ├── rag-chatbot/
+│   └── mcp-tools-server/
 └── experience/
     ├── 2025-tamy-ai/      (current)
     ├── 2023-weg/          (1y 10m)
@@ -352,9 +352,9 @@ export const AgentTerminal = ({
 
     if (cmd === "projects" || cmd === "proj") {
       const projs: [string, string][] = [
-        ["  → agents-cookbook · LangChain/LangGraph + MCP + RAG", "https://github.com/RenanMiqueloti/agents-cookbook"],
-        ["  → semantic-search-arxiv · hybrid retrieval (BM25 + dense + RRF)", "https://huggingface.co/spaces/RenanMiqueloti/semantic-search-arxiv"],
-        ["  → flight-delays · scikit-learn + SHAP + Streamlit", "https://renan-flight-delays.streamlit.app"],
+        ["  → agents-AI · LangGraph + MCP + HITL + evals", "https://github.com/RenanMiqueloti/agents-AI"],
+        ["  → rag-chatbot · Qdrant + hybrid retrieval + cross-encoder rerank", "https://github.com/RenanMiqueloti/rag-chatbot"],
+        ["  → mcp-tools-server · custom MCP server", "https://github.com/RenanMiqueloti/mcp-tools-server"],
         ["  → todos os repos públicos", PERSONA.github],
       ];
       return [
