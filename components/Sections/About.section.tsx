@@ -146,7 +146,7 @@ const About = () => {
             </Window>
           </Reveal>
 
-          <Reveal delay={260}>
+          <Reveal delay={260} className="h-full">
             <div className="flex flex-col gap-3 h-full">
               <Window title={a.expWindowTitle}>
                 <div className="p-3.5 font-mono text-[12px] leading-[1.7]">

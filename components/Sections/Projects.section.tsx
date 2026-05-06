@@ -29,7 +29,7 @@ const Projects = () => {
                 rel="noopener noreferrer"
                 className="group relative block p-8 md:p-10 hover:bg-zinc-900/30 transition-colors"
               >
-                <div className="relative">
+                <div className="relative max-w-2xl mx-auto">
                   <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald-300/90">
                     {featured.label}
                   </span>
