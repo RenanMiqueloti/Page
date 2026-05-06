@@ -125,7 +125,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — modelos preditivos para automação industrial e otimização de processos (2023–2025).",
+          text: "Data Scientist @ WEG — soluções de machine learning para automação industrial e otimização de processos (2023–2025).",
         },
         {
           tag: "[FOUNDATION]",
@@ -347,7 +347,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — predictive models for industrial automation and process optimization (2023–2025).",
+          text: "Data Scientist @ WEG — machine learning solutions for industrial automation and process optimization (2023–2025).",
         },
         {
           tag: "[FOUNDATION]",
