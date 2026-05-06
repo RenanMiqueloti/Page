@@ -137,19 +137,16 @@ const About = () => {
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
-          <Reveal delay={200} className="h-full">
+          <Reveal delay={200}>
             <Window
               title={a.terminalWindowTitle}
               hint={a.terminalHint}
-              className="h-full flex flex-col"
             >
-              <div className="flex-1 min-h-0">
-                <AgentTerminal height="100%" />
-              </div>
+              <AgentTerminal height={420} />
             </Window>
           </Reveal>
 
-          <Reveal delay={260}>
+          <Reveal delay={260} className="h-full">
             <div className="flex flex-col gap-3 h-full">
               <Window title={a.expWindowTitle}>
                 <div className="p-3.5 font-mono text-[12px] leading-[1.7]">
