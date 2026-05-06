@@ -268,6 +268,24 @@ export const MESSAGES: Record<Locale, Messages> = {
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
           cta: "Ver no GitHub",
         },
+        {
+          label: "DESTAQUE",
+          title: "industrial-anomaly-detection",
+          description:
+            "Detecção de anomalias não supervisionada em séries temporais industriais: Isolation Forest, OC-SVM, AutoEncoder (PyTorch) e SHAP para explicabilidade. Bootstrap CI e dashboard Streamlit para visualização.",
+          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
+          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
+          cta: "Ver no GitHub",
+        },
+        {
+          label: "DESTAQUE",
+          title: "mcp-tools-server",
+          description:
+            "MCP server customizado com 6 ferramentas utilitárias expostas via stdio: datetime, calculate, text_stats, json_extract, search_knowledge e http_get. Compatível com Claude Desktop e qualquer cliente MCP.",
+          tags: ["Python", "MCP", "Claude", "LangGraph"],
+          url: "https://github.com/RenanMiqueloti/mcp-tools-server",
+          cta: "Ver no GitHub",
+        },
       ],
       seeAllCta: "$ ver todos os repos no GitHub",
       seeAllUrl: SHARED_FEATURED_URL,
@@ -470,6 +488,24 @@ export const MESSAGES: Record<Locale, Messages> = {
             "Production RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
           tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
+          cta: "View on GitHub",
+        },
+        {
+          label: "FEATURED",
+          title: "industrial-anomaly-detection",
+          description:
+            "Unsupervised anomaly detection on industrial time-series: Isolation Forest, OC-SVM, AutoEncoder (PyTorch) and SHAP for explainability. Bootstrap confidence intervals and Streamlit dashboard for visualization.",
+          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
+          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
+          cta: "View on GitHub",
+        },
+        {
+          label: "FEATURED",
+          title: "mcp-tools-server",
+          description:
+            "Custom MCP server with 6 utility tools exposed via stdio: datetime, calculate, text_stats, json_extract, search_knowledge and http_get. Compatible with Claude Desktop and any MCP client.",
+          tags: ["Python", "MCP", "Claude", "LangGraph"],
+          url: "https://github.com/RenanMiqueloti/mcp-tools-server",
           cta: "View on GitHub",
         },
       ],

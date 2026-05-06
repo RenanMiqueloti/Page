@@ -29,10 +29,6 @@ const Projects = () => {
                 rel="noopener noreferrer"
                 className="group relative block h-full p-8 md:p-10 overflow-hidden hover:bg-zinc-900/30 transition-colors"
               >
-                <div className="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-500/40 bg-amber-500/10 font-mono text-[10px] uppercase tracking-[0.2em] text-amber-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  {p.comingSoonLabel}
-                </div>
                 <div className="relative">
                   <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald-300/90">
                     {featured.label}
