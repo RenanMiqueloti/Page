@@ -255,7 +255,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         description:
           "Referência de padrões de produção para agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL, multi-provider (Ollama / Claude / OpenAI) e evals com LLM-as-judge — tudo em um único repositório executável.",
         tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
-        url: "https://github.com/RenanMiqueloti/agents-AI",
+        url: SHARED_FEATURED_URL,
         cta: "Ver no GitHub",
       },
       secondary: [
@@ -477,7 +477,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         description:
           "Production patterns reference for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL, multi-provider (Ollama / Claude / OpenAI) and LLM-as-judge evals — all in a single runnable repository.",
         tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
-        url: "https://github.com/RenanMiqueloti/agents-AI",
+        url: SHARED_FEATURED_URL,
         cta: "View on GitHub",
       },
       secondary: [
