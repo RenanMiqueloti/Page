@@ -253,12 +253,21 @@ export const MESSAGES: Record<Locale, Messages> = {
         label: "DESTAQUE",
         title: "agents-AI",
         description:
-          "Referência de padrões de produção para agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL, multi-provider (Ollama / Claude / OpenAI) e evals com LLM-as-judge — tudo em um único repositório executável.",
+          "Referência de padrões de produção para agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI) — tudo em um único repositório executável.",
         tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
         url: SHARED_FEATURED_URL,
-        cta: "Ver no GitHub",
+        cta: "Ver perfil no GitHub",
       },
       secondary: [
+        {
+          label: "DESTAQUE",
+          title: "industrial-anomaly-detection",
+          description:
+            "Detecção de anomalias não supervisionada em séries temporais industriais (dataset IMS/NASA): Isolation Forest, LOF, OC-SVM, AutoEncoder (PyTorch) e SHAP para explicabilidade. Bootstrap CI e dashboard Streamlit para visualização.",
+          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
+          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
+          cta: "Ver no GitHub",
+        },
         {
           label: "DESTAQUE",
           title: "rag-chatbot",
@@ -266,15 +275,6 @@ export const MESSAGES: Record<Locale, Messages> = {
             "Pipeline RAG de produção com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
           tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
-          cta: "Ver no GitHub",
-        },
-        {
-          label: "DESTAQUE",
-          title: "industrial-anomaly-detection",
-          description:
-            "Detecção de anomalias não supervisionada em séries temporais industriais: Isolation Forest, OC-SVM, AutoEncoder (PyTorch) e SHAP para explicabilidade. Bootstrap CI e dashboard Streamlit para visualização.",
-          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
-          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
           cta: "Ver no GitHub",
         },
         {
@@ -475,12 +475,21 @@ export const MESSAGES: Record<Locale, Messages> = {
         label: "FEATURED",
         title: "agents-AI",
         description:
-          "Production patterns reference for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL, multi-provider (Ollama / Claude / OpenAI) and LLM-as-judge evals — all in a single runnable repository.",
+          "Production patterns reference for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL and multi-provider (Ollama / Claude / OpenAI) — all in a single runnable repository.",
         tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
         url: SHARED_FEATURED_URL,
-        cta: "View on GitHub",
+        cta: "View GitHub profile",
       },
       secondary: [
+        {
+          label: "FEATURED",
+          title: "industrial-anomaly-detection",
+          description:
+            "Unsupervised anomaly detection on industrial time-series (IMS/NASA dataset): Isolation Forest, LOF, OC-SVM, AutoEncoder (PyTorch) and SHAP for explainability. Bootstrap confidence intervals and Streamlit dashboard for visualization.",
+          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
+          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
+          cta: "View on GitHub",
+        },
         {
           label: "FEATURED",
           title: "rag-chatbot",
@@ -488,15 +497,6 @@ export const MESSAGES: Record<Locale, Messages> = {
             "Production RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
           tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
-          cta: "View on GitHub",
-        },
-        {
-          label: "FEATURED",
-          title: "industrial-anomaly-detection",
-          description:
-            "Unsupervised anomaly detection on industrial time-series: Isolation Forest, OC-SVM, AutoEncoder (PyTorch) and SHAP for explainability. Bootstrap confidence intervals and Streamlit dashboard for visualization.",
-          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
-          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
           cta: "View on GitHub",
         },
         {
