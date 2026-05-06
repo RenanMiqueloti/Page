@@ -108,7 +108,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       lastBuild: "última atualização",
       subtitleStrong: "AI Engineer",
       subtitleBody:
-        " — agentes, RAG e ML aplicado. Foco em arquitetura de sistemas LLM com avaliação contínua, observabilidade e retrieval performático.",
+        " — agentes, RAG e ML aplicado. Foco em arquitetura de sistemas LLM com avaliação contínua, observabilidade e retrieval.",
       bridgeForNonTech:
         "5 anos de experiência em IA aplicada, com 2 dedicados a sistemas multi-agente e RAG.",
       ctaPrimary: "$ ver projetos",
@@ -330,7 +330,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       lastBuild: "last updated",
       subtitleStrong: "AI Engineer",
       subtitleBody:
-        " — agents, RAG and applied ML. Focused on LLM system architecture with continuous evaluation, observability and performant retrieval.",
+        " — agents, RAG and applied ML. Focused on LLM system architecture with continuous evaluation, observability and retrieval.",
       bridgeForNonTech:
         "5 years of experience in applied AI, with 2 dedicated to multi-agent systems and RAG.",
       ctaPrimary: "$ see projects",
