@@ -72,8 +72,6 @@ export type Messages = {
     headline: string;
     body: string;
     ctaEmail: string;
-    ctaCal: string;
-    ctaCalUrl: string;
   };
   footer: {
     copyright: string;
@@ -90,7 +88,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       title: "Renan Miqueloti — AI Engineer · agentes, RAG e observabilidade",
       fullTitle: "Renan Miqueloti — AI Engineer · agentes, RAG e observabilidade",
       description:
-        "AI Engineer no Brasil. Agentes multi-turn (LangGraph), pipelines RAG e evals em produção. Aberto a conversas.",
+        "AI Engineer no Brasil. Agentes multi-turn (LangGraph), pipelines RAG e evals em ambiente profissional. Aberto a conversas.",
       ogLocale: "pt_BR",
     },
     header: {
@@ -108,7 +106,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       lastBuild: "última atualização",
       subtitleStrong: "AI Engineer",
       subtitleBody:
-        " — agentes, RAG e ML aplicado. Foco em arquitetura de sistemas LLM com avaliação contínua, observabilidade e retrieval performático.",
+        " — agentes, RAG e ML aplicado. Foco em construir sistemas LLM com evals e retrieval.",
       bridgeForNonTech:
         "5 anos de experiência em IA aplicada, com 2 dedicados a sistemas multi-agente e RAG.",
       ctaPrimary: "$ ver projetos",
@@ -125,7 +123,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — modelos preditivos para automação industrial e otimização de processos (2023–2025).",
+          text: "Data Scientist @ WEG — soluções de machine learning para automação industrial e otimização de processos (2023–2025).",
         },
         {
           tag: "[FOUNDATION]",
@@ -143,7 +141,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         { key: "stack", value: "python · langgraph · mcp · pytorch · fastapi" },
         { key: "since", value: "2021 · ai/ml aplicado · 2024 · agentes" },
         { key: "location", value: "remoto · brasil · gmt-3" },
-        { key: "langs", value: "pt-br (nativo) · en (intermediário · B2)" },
+        { key: "langs", value: "pt-br (nativo) · en (intermediário-avançado · B2)" },
         { key: "status", value: "mid/senior · contratação pj" },
       ],
     },
@@ -248,22 +246,22 @@ export const MESSAGES: Record<Locale, Messages> = {
       eyebrow: "// 03 · projects",
       title: "Selected work",
       intro:
-        "Repositórios e experimentos públicos em retrieval, ML aplicado e sistemas com agentes. Os projetos principais permanecem confidenciais.",
+        "Repositórios e projetos públicos em retrieval, ML aplicado e sistemas com agentes. Os projetos profissionais permanecem confidenciais.",
       featured: {
         label: "DESTAQUE",
         title: "agents-AI",
         description:
-          "Referência de padrões de produção para agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI) — tudo em um único repositório executável.",
-        tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
-        url: SHARED_FEATURED_URL,
-        cta: "Ver perfil no GitHub",
+          "Projeto executável de agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI).",
+        tags: ["LangGraph", "MCP", "LangChain"],
+        url: "https://github.com/RenanMiqueloti/agents-AI",
+        cta: "Ver no GitHub",
       },
       secondary: [
         {
           label: "DESTAQUE",
           title: "industrial-anomaly-detection",
           description:
-            "Detecção de anomalias não supervisionada em séries temporais industriais (dataset IMS/NASA): Isolation Forest, LOF, OC-SVM, AutoEncoder (PyTorch) e SHAP para explicabilidade. Bootstrap CI e dashboard Streamlit para visualização.",
+            "Detecção de anomalias não supervisionada em séries temporais industriais (dataset IMS/NASA): Isolation Forest, LOF, OC-SVM, AutoEncoder (PyTorch) e SHAP para explicabilidade. Intervalos de confiança via bootstrap e dashboard Streamlit para visualização.",
           tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
           url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
           cta: "Ver no GitHub",
@@ -272,7 +270,7 @@ export const MESSAGES: Record<Locale, Messages> = {
           label: "DESTAQUE",
           title: "rag-chatbot",
           description:
-            "Pipeline RAG de produção com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
+            "Pipeline RAG com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
           tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
           cta: "Ver no GitHub",
@@ -298,13 +296,11 @@ export const MESSAGES: Record<Locale, Messages> = {
       headline: "Vamos conversar.",
       body: "Aberto a conversas sobre AI Engineering. Pleno/sênior, contratação PJ, remoto a partir do Brasil.",
       ctaEmail: "$ enviar mensagem",
-      ctaCal: "$ agendar uma conversa",
-      ctaCalUrl: "https://cal.com/renanmiqueloti",
     },
     footer: {
       copyright: "Renan Miqueloti",
       version: "pt-br · en",
-      cta: "$ aberto a contratos pj e consultoria · renanmiqueloti@gmail.com",
+      cta: "$ aberto a contratos pj · renanmiqueloti@gmail.com",
     },
   },
   en: {
@@ -312,7 +308,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       title: "Renan Miqueloti — AI Engineer · agents, RAG and observability",
       fullTitle: "Renan Miqueloti — AI Engineer · agents, RAG and observability",
       description:
-        "AI Engineer based in Brazil. Multi-turn agents (LangGraph), RAG pipelines and evals in production. Open to conversations.",
+        "AI Engineer based in Brazil. Multi-turn agents (LangGraph), RAG pipelines and evals in professional use. Open to conversations.",
       ogLocale: "en_US",
     },
     header: {
@@ -330,7 +326,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       lastBuild: "last updated",
       subtitleStrong: "AI Engineer",
       subtitleBody:
-        " — agents, RAG and applied ML. Focused on LLM system architecture with continuous evaluation, observability and performant retrieval.",
+        " — agents, RAG and applied ML. Focused on building LLM systems with evals and retrieval.",
       bridgeForNonTech:
         "5 years of experience in applied AI, with 2 dedicated to multi-agent systems and RAG.",
       ctaPrimary: "$ see projects",
@@ -347,7 +343,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — predictive models for industrial automation and process optimization (2023–2025).",
+          text: "Data Scientist @ WEG — machine learning solutions for industrial automation and process optimization (2023–2025).",
         },
         {
           tag: "[FOUNDATION]",
@@ -470,15 +466,15 @@ export const MESSAGES: Record<Locale, Messages> = {
       eyebrow: "// 03 · projects",
       title: "Selected work",
       intro:
-        "Public repos and experiments in retrieval, applied ML and agent-based systems. The primary projects remain confidential.",
+        "Public repos and projects in retrieval, applied ML and agent-based systems. Professional projects remain confidential.",
       featured: {
         label: "FEATURED",
         title: "agents-AI",
         description:
-          "Production patterns reference for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL and multi-provider (Ollama / Claude / OpenAI) — all in a single runnable repository.",
-        tags: ["LangGraph", "MCP", "LangChain", "RAG", "Evals"],
-        url: SHARED_FEATURED_URL,
-        cta: "View GitHub profile",
+          "Runnable project for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL and multi-provider (Ollama / Claude / OpenAI).",
+        tags: ["LangGraph", "MCP", "LangChain"],
+        url: "https://github.com/RenanMiqueloti/agents-AI",
+        cta: "View on GitHub",
       },
       secondary: [
         {
@@ -494,7 +490,7 @@ export const MESSAGES: Record<Locale, Messages> = {
           label: "FEATURED",
           title: "rag-chatbot",
           description:
-            "Production RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
+            "RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
           tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
           url: "https://github.com/RenanMiqueloti/rag-chatbot",
           cta: "View on GitHub",
@@ -520,13 +516,11 @@ export const MESSAGES: Record<Locale, Messages> = {
       headline: "Let's talk.",
       body: "Open to AI Engineering conversations. Mid/senior, contractor (PJ), remote from Brazil.",
       ctaEmail: "$ send a message",
-      ctaCal: "$ schedule a call",
-      ctaCalUrl: "https://cal.com/renanmiqueloti",
     },
     footer: {
       copyright: "Renan Miqueloti",
       version: "pt-br · en",
-      cta: "$ open to contract work and consulting · renanmiqueloti@gmail.com",
+      cta: "$ open to contract work · renanmiqueloti@gmail.com",
     },
   },
 };
