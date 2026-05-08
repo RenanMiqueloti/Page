@@ -72,8 +72,6 @@ export type Messages = {
     headline: string;
     body: string;
     ctaEmail: string;
-    ctaCal: string;
-    ctaCalUrl: string;
   };
   footer: {
     copyright: string;
@@ -298,8 +296,6 @@ export const MESSAGES: Record<Locale, Messages> = {
       headline: "Vamos conversar.",
       body: "Aberto a conversas sobre AI Engineering. Pleno/sênior, contratação PJ, remoto a partir do Brasil.",
       ctaEmail: "$ enviar mensagem",
-      ctaCal: "$ agendar uma conversa",
-      ctaCalUrl: "https://cal.com/renanmiqueloti",
     },
     footer: {
       copyright: "Renan Miqueloti",
@@ -520,8 +516,6 @@ export const MESSAGES: Record<Locale, Messages> = {
       headline: "Let's talk.",
       body: "Open to AI Engineering conversations. Mid/senior, contractor (PJ), remote from Brazil.",
       ctaEmail: "$ send a message",
-      ctaCal: "$ schedule a call",
-      ctaCalUrl: "https://cal.com/renanmiqueloti",
     },
     footer: {
       copyright: "Renan Miqueloti",

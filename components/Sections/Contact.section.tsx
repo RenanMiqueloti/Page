@@ -1,6 +1,5 @@
 import { AiOutlineGithub } from "react-icons/ai";
 import { FaLinkedinIn } from "react-icons/fa";
-import { FiCalendar } from "react-icons/fi";
 import { Reveal } from "../Misc/Reveal.component";
 import { useT } from "../../lib/useLocale";
 
@@ -64,16 +63,6 @@ const Contact = () => {
               <span>{c.ctaEmail}</span>
               <span className="text-zinc-700">·</span>
               <span>{EMAIL}</span>
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </a>
-            <a
-              href={c.ctaCalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 px-5 py-3.5 border border-zinc-700 text-zinc-300 rounded-md font-mono text-sm hover:border-emerald-500/50 hover:text-emerald-300 transition-colors"
-            >
-              <FiCalendar size={14} className="text-emerald-400" />
-              <span>{c.ctaCal}</span>
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </a>
           </div>
