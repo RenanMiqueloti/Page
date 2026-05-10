@@ -31,7 +31,7 @@ const PERSONA = {
   approach: "do experimento ao deploy, com evals e observabilidade",
   bio: "AI Engineer focado em arquitetura de sistemas LLM.",
   bioLong:
-    "Atuação em retrieval, evals e observabilidade aplicados a pipelines de IA em produção.",
+    "Atuação em retrieval, evals e observabilidade aplicados a pipelines de IA.",
 };
 
 const SKILL_LINES: [string, string][] = [
