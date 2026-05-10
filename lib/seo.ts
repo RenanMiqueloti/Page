@@ -28,7 +28,7 @@ export const PERSON_JSON_LD = {
   image: AVATAR_URL,
   jobTitle: "AI Engineer",
   description:
-    "Renan Miqueloti constrói agentes com tool-use, MCP, RAG e modelos preditivos — com evals, observabilidade e foco em produção.",
+    "Renan Miqueloti constrói agentes com tool-use, MCP, RAG e modelos preditivos — com evals, observabilidade e foco em qualidade de engenharia.",
   address: { "@type": "PostalAddress", addressCountry: "BR" },
   sameAs: [
     "https://www.linkedin.com/in/renanmiqueloti",
