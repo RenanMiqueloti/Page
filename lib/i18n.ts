@@ -259,12 +259,12 @@ export const MESSAGES: Record<Locale, Messages> = {
       secondary: [
         {
           label: "DESTAQUE",
-          title: "industrial-anomaly-detection",
+          title: "Manutenção preditiva — falhas em rolamentos",
           description:
-            "Detecção de anomalias não supervisionada em séries temporais industriais (dataset IMS/NASA): Isolation Forest, LOF, OC-SVM, AutoEncoder (PyTorch) e SHAP para explicabilidade. Intervalos de confiança via bootstrap e dashboard Streamlit para visualização.",
-          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
-          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
-          cta: "Ver no GitHub",
+            "Detecção de falhas em rolamentos industriais a partir de sinais de vibração (IMS/NASA Run 2). Pipeline não supervisionado treinado só em dados saudáveis: Isolation Forest, OC-SVM, LOF e AutoEncoder, com limiar p99 por rolamento (FP ≈ 1%) e explicabilidade SHAP.",
+          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Predictive Maintenance"],
+          url: "https://industrialanm.streamlit.app/",
+          cta: "Ver demo ao vivo",
         },
         {
           label: "DESTAQUE",
@@ -479,12 +479,12 @@ export const MESSAGES: Record<Locale, Messages> = {
       secondary: [
         {
           label: "FEATURED",
-          title: "industrial-anomaly-detection",
+          title: "Predictive maintenance — bearing faults",
           description:
-            "Unsupervised anomaly detection on industrial time-series (IMS/NASA dataset): Isolation Forest, LOF, OC-SVM, AutoEncoder (PyTorch) and SHAP for explainability. Bootstrap confidence intervals and Streamlit dashboard for visualization.",
-          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Anomaly Detection"],
-          url: "https://github.com/RenanMiqueloti/industrial-anomaly-detection",
-          cta: "View on GitHub",
+            "Industrial bearing fault detection from vibration signals (IMS/NASA Run 2). Unsupervised pipeline trained on healthy data only: Isolation Forest, OC-SVM, LOF and AutoEncoder, with a per-bearing p99 threshold (FP ≈ 1%) and SHAP explainability.",
+          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Predictive Maintenance"],
+          url: "https://industrialanm.streamlit.app/",
+          cta: "View live demo",
         },
         {
           label: "FEATURED",
