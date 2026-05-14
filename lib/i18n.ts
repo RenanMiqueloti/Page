@@ -85,10 +85,10 @@ const SHARED_FEATURED_URL = "https://github.com/RenanMiqueloti";
 export const MESSAGES: Record<Locale, Messages> = {
   pt: {
     meta: {
-      title: "Renan Miqueloti — AI Engineer · agentes, RAG e observabilidade",
-      fullTitle: "Renan Miqueloti — AI Engineer · agentes, RAG e observabilidade",
+      title: "Renan Miqueloti — AI Engineer · agents, RAG e observabilidade",
+      fullTitle: "Renan Miqueloti — AI Engineer · agents, RAG e observabilidade",
       description:
-        "AI Engineer no Brasil. Agentes multi-turn (LangGraph), pipelines RAG e evals em ambiente profissional. Aberto a conversas.",
+        "AI Engineer no Brasil. Agents multi-turn (LangGraph), pipelines RAG e evals em ambiente profissional. Aberto a conversas.",
       ogLocale: "pt_BR",
     },
     header: {
@@ -106,9 +106,8 @@ export const MESSAGES: Record<Locale, Messages> = {
       lastBuild: "última atualização",
       subtitleStrong: "AI Engineer",
       subtitleBody:
-        " — agentes, RAG e ML aplicado. Foco em construir sistemas LLM com evals e retrieval.",
-      bridgeForNonTech:
-        "5 anos de experiência em IA aplicada, com 2 dedicados a sistemas multi-agente e RAG.",
+        " — sistemas com LLMs e ML aplicado.",
+      bridgeForNonTech: "5 anos em IA aplicada · 2 em agents e pipelines RAG.",
       ctaPrimary: "$ ver projetos",
       ctaSecondary: "vamos conversar",
       avatarFooter: "Brasil · remoto",
@@ -119,7 +118,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       experience: [
         {
           tag: "[CURRENT]",
-          text: "AI Engineer @ Tamy AI — agentes multi-tool com handoff humano e RAG sobre bases internas.",
+          text: "AI Engineer @ Tamy AI — agents multi-tool com HITL e RAG sobre bases internas.",
         },
         {
           tag: "[PREVIOUS]",
@@ -127,7 +126,11 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[FOUNDATION]",
-          text: "TI & análise de sistemas @ BirminD · estágio web @ Melhor Escola (2018–2023).",
+          text: "TI & análise de sistemas @ BirminD (2021–2023).",
+        },
+        {
+          tag: "[INTERN]",
+          text: "Estágio web @ Melhor Escola (2019–2021).",
         },
         {
           tag: "[DEGREE]",
@@ -136,13 +139,12 @@ export const MESSAGES: Record<Locale, Messages> = {
       ],
       whoami: [
         { key: "host", value: "renan@agent" },
-        { key: "role", value: "ai engineer" },
+        { key: "role", value: "ai engineer · mid/senior · pj" },
         { key: "focus", value: "agents · rag · evals · mlops" },
         { key: "stack", value: "python · langgraph · mcp · pytorch · fastapi" },
-        { key: "since", value: "2021 · ai/ml aplicado · 2024 · agentes" },
+        { key: "since", value: "2021 (ai/ml) · 2024 (agents)" },
         { key: "location", value: "remoto · brasil · gmt-3" },
-        { key: "langs", value: "pt-br (nativo) · en (intermediário-avançado · B2)" },
-        { key: "status", value: "mid/senior · contratação pj" },
+        { key: "langs", value: "pt-br (nativo) · en (B2)" },
       ],
     },
     skills: {
@@ -246,12 +248,12 @@ export const MESSAGES: Record<Locale, Messages> = {
       eyebrow: "// 03 · projects",
       title: "Selected work",
       intro:
-        "Repositórios e projetos públicos em retrieval, ML aplicado e sistemas com agentes. Os projetos profissionais permanecem confidenciais.",
+        "Repositórios e projetos públicos em retrieval, ML aplicado e sistemas com agents. Os projetos profissionais permanecem confidenciais.",
       featured: {
         label: "DESTAQUE",
         title: "agents-AI",
         description:
-          "Projeto executável de agentes de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI).",
+          "Projeto executável de agents de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI).",
         tags: ["LangGraph", "MCP", "LangChain"],
         url: "https://github.com/RenanMiqueloti/agents-AI",
         cta: "Ver no GitHub",
@@ -326,9 +328,8 @@ export const MESSAGES: Record<Locale, Messages> = {
       lastBuild: "last updated",
       subtitleStrong: "AI Engineer",
       subtitleBody:
-        " — agents, RAG and applied ML. Focused on building LLM systems with evals and retrieval.",
-      bridgeForNonTech:
-        "5 years of experience in applied AI, with 2 dedicated to multi-agent systems and RAG.",
+        " — LLM systems and applied ML.",
+      bridgeForNonTech: "5 years in applied AI · 2 in agents and RAG pipelines.",
       ctaPrimary: "$ see projects",
       ctaSecondary: "let's talk",
       avatarFooter: "Brazil · remote",
@@ -339,7 +340,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       experience: [
         {
           tag: "[CURRENT]",
-          text: "AI Engineer @ Tamy AI — multi-tool agents with human handoff and RAG over internal knowledge bases.",
+          text: "AI Engineer @ Tamy AI — multi-tool agents with HITL and RAG over internal knowledge bases.",
         },
         {
           tag: "[PREVIOUS]",
@@ -347,7 +348,11 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[FOUNDATION]",
-          text: "IT & systems analysis @ BirminD · web internship @ Melhor Escola (2018–2023).",
+          text: "IT & systems analysis @ BirminD (2021–2023).",
+        },
+        {
+          tag: "[INTERN]",
+          text: "Web internship @ Melhor Escola (2019–2021).",
         },
         {
           tag: "[DEGREE]",
@@ -356,13 +361,12 @@ export const MESSAGES: Record<Locale, Messages> = {
       ],
       whoami: [
         { key: "host", value: "renan@agent" },
-        { key: "role", value: "ai engineer" },
+        { key: "role", value: "ai engineer · mid/senior · contractor (pj)" },
         { key: "focus", value: "agents · rag · evals · mlops" },
         { key: "stack", value: "python · langgraph · mcp · pytorch · fastapi" },
-        { key: "since", value: "2021 · applied ai/ml · 2024 · agents" },
+        { key: "since", value: "2021 (ai/ml) · 2024 (agents)" },
         { key: "location", value: "remote · brazil · gmt-3" },
-        { key: "langs", value: "en (upper-intermediate · B2) · pt-br (native)" },
-        { key: "status", value: "mid/senior · contractor (pj)" },
+        { key: "langs", value: "en (B2) · pt-br (native)" },
       ],
     },
     skills: {

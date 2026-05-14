@@ -59,7 +59,10 @@ const Header = () => {
         </a>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-0.5">
+        <nav
+          aria-label={locale === "en" ? "Primary" : "Primária"}
+          className="hidden md:flex items-center gap-0.5"
+        >
           {links.map((l) => {
             const isActive = active === l.id;
             return (

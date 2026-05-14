@@ -9,9 +9,10 @@ import {
   Contact,
 } from "../components";
 import {
-  OG_IMAGE,
-  PERSON_JSON_LD,
-  WEBSITE_JSON_LD,
+  getOgImage,
+  getPersonJsonLd,
+  getProfilePageJsonLd,
+  getWebsiteJsonLd,
   SITE_URL,
 } from "../lib/seo";
 import { useLocale } from "../lib/useLocale";
@@ -20,6 +21,7 @@ const Home: NextPage = () => {
   const { t, locale } = useLocale();
   const m = t.meta;
   const canonical = locale === "en" ? `${SITE_URL}/en` : `${SITE_URL}/`;
+  const ogImage = getOgImage(locale);
 
   return (
     <>
@@ -39,7 +41,7 @@ const Home: NextPage = () => {
             lastName: "Miqueloti",
             username: "renanmiqueloti",
           },
-          images: [OG_IMAGE],
+          images: [ogImage],
         }}
         languageAlternates={[
           { hrefLang: "pt-BR", href: `${SITE_URL}/` },
@@ -61,11 +63,11 @@ const Home: NextPage = () => {
           },
           {
             name: "twitter:image",
-            content: OG_IMAGE.url,
+            content: ogImage.url,
           },
           {
             name: "twitter:image:alt",
-            content: OG_IMAGE.alt,
+            content: ogImage.alt,
           },
         ]}
       />
@@ -73,13 +75,19 @@ const Home: NextPage = () => {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(WEBSITE_JSON_LD),
+            __html: JSON.stringify(getWebsiteJsonLd()),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(PERSON_JSON_LD),
+            __html: JSON.stringify(getPersonJsonLd(locale)),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(getProfilePageJsonLd(locale)),
           }}
         />
       </Head>

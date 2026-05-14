@@ -5,7 +5,14 @@ class MyDocument extends Document {
     const locale = this.props.__NEXT_DATA__?.locale || "pt-BR";
     return (
       <Html lang={locale}>
-        <Head />
+        <Head>
+          <meta name="theme-color" content="#09090b" />
+          <meta
+            name="robots"
+            content="index, follow, max-image-preview:large, max-snippet:-1"
+          />
+          <meta name="format-detection" content="telephone=no" />
+        </Head>
         <body>
           <Main />
           <NextScript />
