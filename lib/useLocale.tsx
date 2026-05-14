@@ -22,6 +22,13 @@ const routerToInternal = (l: string | undefined): Locale => {
 
 const internalToRouter = (l: Locale): string => (l === "en" ? "en" : "pt-BR");
 
+const persistLocaleCookie = (routerLocale: string) => {
+  if (typeof document === "undefined") return;
+  const maxAge = 60 * 60 * 24 * 365;
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  document.cookie = `NEXT_LOCALE=${routerLocale}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
+};
+
 type Ctx = {
   locale: Locale;
   setLocale: (l: Locale) => void;
@@ -38,6 +45,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const setLocale = useCallback(
     (l: Locale) => {
       const target = internalToRouter(l);
+      persistLocaleCookie(target);
       router.push(router.asPath, router.asPath, { locale: target });
     },
     [router]
@@ -46,6 +54,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const toggle = useCallback(() => {
     const next: Locale = locale === "pt" ? "en" : "pt";
     const target = internalToRouter(next);
+    persistLocaleCookie(target);
     router.push(router.asPath, router.asPath, { locale: target });
   }, [locale, router]);
 
