@@ -251,12 +251,12 @@ export const MESSAGES: Record<Locale, Messages> = {
         "Repositórios e projetos públicos em retrieval, ML aplicado e sistemas com agents. Os projetos profissionais permanecem confidenciais.",
       featured: {
         label: "DESTAQUE",
-        title: "agents-AI",
+        title: "rag-chatbot",
         description:
-          "Projeto executável de agents de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI).",
-        tags: ["LangGraph", "MCP", "LangChain"],
-        url: "https://github.com/RenanMiqueloti/agents-AI",
-        cta: "Ver no GitHub",
+          "Pipeline RAG com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
+        tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
+        url: "https://renanmiq-rag-chatbot.hf.space",
+        cta: "Ver demo",
       },
       secondary: [
         {
@@ -270,11 +270,11 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           label: "DESTAQUE",
-          title: "rag-chatbot",
+          title: "agents-AI",
           description:
-            "Pipeline RAG com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
-          tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
-          url: "https://github.com/RenanMiqueloti/rag-chatbot",
+            "Projeto executável de agents de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI).",
+          tags: ["LangGraph", "MCP", "LangChain"],
+          url: "https://github.com/RenanMiqueloti/agents-AI",
           cta: "Ver no GitHub",
         },
         {
@@ -473,12 +473,12 @@ export const MESSAGES: Record<Locale, Messages> = {
         "Public repos and projects in retrieval, applied ML and agent-based systems. Professional projects remain confidential.",
       featured: {
         label: "FEATURED",
-        title: "agents-AI",
+        title: "rag-chatbot",
         description:
-          "Runnable project for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL and multi-provider (Ollama / Claude / OpenAI).",
-        tags: ["LangGraph", "MCP", "LangChain"],
-        url: "https://github.com/RenanMiqueloti/agents-AI",
-        cta: "View on GitHub",
+          "RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
+        tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
+        url: "https://renanmiq-rag-chatbot.hf.space",
+        cta: "View demo",
       },
       secondary: [
         {
@@ -492,11 +492,11 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           label: "FEATURED",
-          title: "rag-chatbot",
+          title: "agents-AI",
           description:
-            "RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
-          tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
-          url: "https://github.com/RenanMiqueloti/rag-chatbot",
+            "Runnable project for AI agents: custom MCP server with 4 tools exposed via stdio, LangGraph HITL and multi-provider (Ollama / Claude / OpenAI).",
+          tags: ["LangGraph", "MCP", "LangChain"],
+          url: "https://github.com/RenanMiqueloti/agents-AI",
           cta: "View on GitHub",
         },
         {
