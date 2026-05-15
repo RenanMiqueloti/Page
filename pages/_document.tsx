@@ -1,11 +1,14 @@
 import Document, { Html, Head, Main, NextScript } from "next/document";
 
+const LOCALE_DETECT_SCRIPT = `(function(){try{if(location.pathname!=="/")return;if(document.cookie.indexOf("NEXT_LOCALE=")!==-1)return;var l=(navigator.language||(navigator.languages&&navigator.languages[0])||"").toLowerCase();if(l.indexOf("en")===0){var s=location.protocol==="https:"?"; Secure":"";document.cookie="NEXT_LOCALE=en; Path=/; Max-Age=31536000; SameSite=Lax"+s;location.replace("/en");}}catch(e){}})();`;
+
 class MyDocument extends Document {
   render() {
     const locale = this.props.__NEXT_DATA__?.locale || "pt-BR";
     return (
       <Html lang={locale}>
         <Head>
+          <script dangerouslySetInnerHTML={{ __html: LOCALE_DETECT_SCRIPT }} />
           <meta name="theme-color" content="#09090b" />
           <meta
             name="robots"
