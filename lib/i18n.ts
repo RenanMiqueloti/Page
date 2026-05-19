@@ -261,15 +261,6 @@ export const MESSAGES: Record<Locale, Messages> = {
       secondary: [
         {
           label: "DESTAQUE",
-          title: "Manutenção preditiva — falhas em rolamentos",
-          description:
-            "Detecção de falhas em rolamentos industriais a partir de sinais de vibração (IMS/NASA Run 2). Pipeline não supervisionado treinado só em dados saudáveis: Isolation Forest, OC-SVM, LOF e AutoEncoder, com limiar p99 por rolamento (FP ≈ 1%) e explicabilidade SHAP.",
-          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Predictive Maintenance"],
-          url: "https://industrialanm.streamlit.app/",
-          cta: "Ver demo ao vivo",
-        },
-        {
-          label: "DESTAQUE",
           title: "agents-AI",
           description:
             "Projeto executável de agents de IA: MCP server customizado com 4 ferramentas expostas via stdio, LangGraph HITL e multi-provider (Ollama / Claude / OpenAI).",
@@ -481,15 +472,6 @@ export const MESSAGES: Record<Locale, Messages> = {
         cta: "View demo",
       },
       secondary: [
-        {
-          label: "FEATURED",
-          title: "Predictive maintenance — bearing faults",
-          description:
-            "Industrial bearing fault detection from vibration signals (IMS/NASA Run 2). Unsupervised pipeline trained on healthy data only: Isolation Forest, OC-SVM, LOF and AutoEncoder, with a per-bearing p99 threshold (FP ≈ 1%) and SHAP explainability.",
-          tags: ["Python", "PyTorch", "SHAP", "Streamlit", "Predictive Maintenance"],
-          url: "https://industrialanm.streamlit.app/",
-          cta: "View live demo",
-        },
         {
           label: "FEATURED",
           title: "agents-AI",
