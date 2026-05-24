@@ -251,14 +251,23 @@ export const MESSAGES: Record<Locale, Messages> = {
         "Repositórios e projetos públicos em retrieval, ML aplicado e sistemas com agents. Os projetos profissionais permanecem confidenciais.",
       featured: {
         label: "DESTAQUE",
-        title: "rag-chatbot",
+        title: "máfia game",
         description:
-          "Pipeline RAG com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
-        tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
-        url: "https://renanmiq-rag-chatbot.hf.space",
+          "Partida de Lobisomem (Mafia) onde cada jogador é um agente LLM com papel oculto. LangGraph orquestra as fases noite → discussão → voto com contexto isolado por jogador. Gate de regeneração com 19 detectores específicos contra alucinação — atribuição falsa, phantom corpse, fake-claim, confusão de fase.",
+        tags: ["LangGraph", "Multi-agent", "Groq", "Gradio"],
+        url: "https://renanmiq-langgraph-lobisomem.hf.space",
         cta: "Ver demo",
       },
       secondary: [
+        {
+          label: "DESTAQUE",
+          title: "rag-chatbot",
+          description:
+            "Pipeline RAG com LangGraph orquestrando retrieve → rerank → generate. Hybrid retrieval BM25 + semantic com RRF, cross-encoder re-ranking, FastAPI streaming e harness de evals com LLM-as-judge (relevância, faithfulness, completeness).",
+          tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
+          url: "https://renanmiq-rag-chatbot.hf.space",
+          cta: "Ver demo",
+        },
         {
           label: "DESTAQUE",
           title: "agents-AI",
@@ -464,14 +473,23 @@ export const MESSAGES: Record<Locale, Messages> = {
         "Public repos and projects in retrieval, applied ML and agent-based systems. Professional projects remain confidential.",
       featured: {
         label: "FEATURED",
-        title: "rag-chatbot",
+        title: "mafia game",
         description:
-          "RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
-        tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
-        url: "https://renanmiq-rag-chatbot.hf.space",
+          "Werewolf (Mafia) game where each player is an independent LLM agent with a hidden role. LangGraph orchestrates night → discussion → vote with per-player context isolation. Regen gate with 19 specific detectors against hallucination — false attribution, phantom corpse, fake-claim, phase confusion.",
+        tags: ["LangGraph", "Multi-agent", "Groq", "Gradio"],
+        url: "https://renanmiq-langgraph-lobisomem.hf.space",
         cta: "View demo",
       },
       secondary: [
+        {
+          label: "FEATURED",
+          title: "rag-chatbot",
+          description:
+            "RAG pipeline with LangGraph orchestrating retrieve → rerank → generate. Hybrid retrieval BM25 + semantic with RRF, cross-encoder re-ranking, FastAPI streaming and an LLM-as-judge eval harness (relevance, faithfulness, completeness).",
+          tags: ["LangGraph", "Qdrant", "Hybrid + Rerank", "FastAPI"],
+          url: "https://renanmiq-rag-chatbot.hf.space",
+          cta: "View demo",
+        },
         {
           label: "FEATURED",
           title: "agents-AI",
