@@ -88,7 +88,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       title: "Renan Miqueloti — AI Engineer · agents, RAG e observabilidade",
       fullTitle: "Renan Miqueloti — AI Engineer · agents, RAG e observabilidade",
       description:
-        "AI Engineer no Brasil. Agents multi-turn (LangGraph), pipelines RAG e evals em ambiente profissional. Aberto a conversas.",
+        "AI Engineer no Brasil. AI Ops, deploy de agents em produção, pipelines RAG e LangGraph. Aberto a conversas.",
       ogLocale: "pt_BR",
     },
     header: {
@@ -107,7 +107,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       subtitleStrong: "AI Engineer",
       subtitleBody:
         " — sistemas com LLMs e ML aplicado.",
-      bridgeForNonTech: "5 anos em IA aplicada · 2 em agents e pipelines RAG.",
+      bridgeForNonTech: "5 anos em IA aplicada · 2 em agents, RAG e AI Ops.",
       ctaPrimary: "$ ver projetos",
       ctaSecondary: "vamos conversar",
       avatarFooter: "Brasil · remoto",
@@ -117,12 +117,20 @@ export const MESSAGES: Record<Locale, Messages> = {
       terminalHint: "interativo · digite 'help' ou 'neofetch'",
       experience: [
         {
-          tag: "[CURRENT]",
-          text: "AI Engineer @ Tamy AI — agents multi-tool com HITL e RAG sobre bases internas.",
+          tag: "[PJ]",
+          text: "miqueloti.tech (2025–)",
+        },
+        {
+          tag: "[  └─ now]",
+          text: "AI Ops Engineer — deploy e orquestração de agents em produção.",
+        },
+        {
+          tag: "[  └─ prev]",
+          text: "AI Engineer @ Tamy AI — agents HITL e RAG (2025–2026).",
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — soluções de machine learning para automação industrial e otimização de processos (2023–2025).",
+          text: "Data Scientist @ WEG — ML para automação industrial (2023–2025).",
         },
         {
           tag: "[FOUNDATION]",
@@ -140,8 +148,8 @@ export const MESSAGES: Record<Locale, Messages> = {
       whoami: [
         { key: "host", value: "renan@agent" },
         { key: "role", value: "ai engineer · mid/senior · pj" },
-        { key: "focus", value: "agents · rag · evals · mlops" },
-        { key: "stack", value: "python · langgraph · mcp · pytorch · fastapi" },
+        { key: "focus", value: "aiops · agents · rag · mlops" },
+        { key: "stack", value: "python · langgraph · aws · fastapi · mcp" },
         { key: "since", value: "2021 (ai/ml) · 2024 (agents)" },
         { key: "location", value: "remoto · brasil · gmt-3" },
         { key: "langs", value: "pt-br (nativo) · en (B2)" },
@@ -173,12 +181,10 @@ export const MESSAGES: Record<Locale, Messages> = {
           title: "LLM Stack",
           items: [
             "Anthropic Claude",
+            "OpenAI GPT",
             "Prompt Engineering",
             "Embeddings",
             "Hugging Face",
-            "Fine-tuning",
-            "LoRA",
-            "OpenAI GPT",
           ],
         },
         {
@@ -187,12 +193,10 @@ export const MESSAGES: Record<Locale, Messages> = {
           title: "RAG & Retrieval",
           items: [
             "RAG",
-            "Chunking",
             "Hybrid Search",
             "Re-ranking",
-            "Weaviate",
-            "pgvector",
             "Qdrant",
+            "pgvector",
           ],
         },
         {
@@ -203,12 +207,8 @@ export const MESSAGES: Record<Locale, Messages> = {
             "PyTorch",
             "scikit-learn",
             "pandas",
-            "NumPy",
             "Time Series",
-            "SHAP",
-            "Streamlit",
             "Computer Vision",
-            "CNN",
           ],
         },
         {
@@ -220,9 +220,10 @@ export const MESSAGES: Record<Locale, Messages> = {
             "Langfuse",
             "Evals",
             "Tracing",
+            "Grafana",
+            "Datadog",
             "Docker",
             "CI/CD",
-            "Monitoring",
           ],
         },
         {
@@ -231,15 +232,13 @@ export const MESSAGES: Record<Locale, Messages> = {
           title: "Backend & Infra",
           items: [
             "Python",
-            "TypeScript",
             "FastAPI",
             "Pydantic",
-            "Postgres",
-            "Redis",
-            "Neo4j",
-            "React",
             "AWS",
             "GCP",
+            "Postgres",
+            "Redis",
+            "TypeScript",
           ],
         },
       ],
@@ -310,7 +309,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       title: "Renan Miqueloti — AI Engineer · agents, RAG and observability",
       fullTitle: "Renan Miqueloti — AI Engineer · agents, RAG and observability",
       description:
-        "AI Engineer based in Brazil. Multi-turn agents (LangGraph), RAG pipelines and evals in professional use. Open to conversations.",
+        "AI Engineer based in Brazil. AI Ops, production agent deployment, LangGraph and RAG pipelines. Open to conversations.",
       ogLocale: "en_US",
     },
     header: {
@@ -329,7 +328,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       subtitleStrong: "AI Engineer",
       subtitleBody:
         " — LLM systems and applied ML.",
-      bridgeForNonTech: "5 years in applied AI · 2 in agents and RAG pipelines.",
+      bridgeForNonTech: "5 years in applied AI · 2 in agents, RAG and AI Ops.",
       ctaPrimary: "$ see projects",
       ctaSecondary: "let's talk",
       avatarFooter: "Brazil · remote",
@@ -339,12 +338,20 @@ export const MESSAGES: Record<Locale, Messages> = {
       terminalHint: "interactive · type 'help' or 'neofetch'",
       experience: [
         {
-          tag: "[CURRENT]",
-          text: "AI Engineer @ Tamy AI — multi-tool agents with HITL and RAG over internal knowledge bases.",
+          tag: "[PJ]",
+          text: "miqueloti.tech (2025–)",
+        },
+        {
+          tag: "[  └─ now]",
+          text: "AI Ops Engineer — production agent deployment and orchestration.",
+        },
+        {
+          tag: "[  └─ prev]",
+          text: "AI Engineer @ Tamy AI — HITL agents and RAG (2025–2026).",
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — machine learning solutions for industrial automation and process optimization (2023–2025).",
+          text: "Data Scientist @ WEG — ML for industrial automation (2023–2025).",
         },
         {
           tag: "[FOUNDATION]",
@@ -362,8 +369,8 @@ export const MESSAGES: Record<Locale, Messages> = {
       whoami: [
         { key: "host", value: "renan@agent" },
         { key: "role", value: "ai engineer · mid/senior · contractor (pj)" },
-        { key: "focus", value: "agents · rag · evals · mlops" },
-        { key: "stack", value: "python · langgraph · mcp · pytorch · fastapi" },
+        { key: "focus", value: "aiops · agents · rag · mlops" },
+        { key: "stack", value: "python · langgraph · aws · fastapi · mcp" },
         { key: "since", value: "2021 (ai/ml) · 2024 (agents)" },
         { key: "location", value: "remote · brazil · gmt-3" },
         { key: "langs", value: "en (B2) · pt-br (native)" },
@@ -395,12 +402,10 @@ export const MESSAGES: Record<Locale, Messages> = {
           title: "LLM Stack",
           items: [
             "Anthropic Claude",
+            "OpenAI GPT",
             "Prompt Engineering",
             "Embeddings",
             "Hugging Face",
-            "Fine-tuning",
-            "LoRA",
-            "OpenAI GPT",
           ],
         },
         {
@@ -409,12 +414,10 @@ export const MESSAGES: Record<Locale, Messages> = {
           title: "RAG & Retrieval",
           items: [
             "RAG",
-            "Chunking",
             "Hybrid Search",
             "Re-ranking",
-            "Weaviate",
-            "pgvector",
             "Qdrant",
+            "pgvector",
           ],
         },
         {
@@ -425,12 +428,8 @@ export const MESSAGES: Record<Locale, Messages> = {
             "PyTorch",
             "scikit-learn",
             "pandas",
-            "NumPy",
             "Time Series",
-            "SHAP",
-            "Streamlit",
             "Computer Vision",
-            "CNN",
           ],
         },
         {
@@ -442,9 +441,10 @@ export const MESSAGES: Record<Locale, Messages> = {
             "Langfuse",
             "Evals",
             "Tracing",
+            "Grafana",
+            "Datadog",
             "Docker",
             "CI/CD",
-            "Monitoring",
           ],
         },
         {
@@ -453,15 +453,13 @@ export const MESSAGES: Record<Locale, Messages> = {
           title: "Backend & Infra",
           items: [
             "Python",
-            "TypeScript",
             "FastAPI",
             "Pydantic",
-            "Postgres",
-            "Redis",
-            "Neo4j",
-            "React",
             "AWS",
             "GCP",
+            "Postgres",
+            "Redis",
+            "TypeScript",
           ],
         },
       ],
