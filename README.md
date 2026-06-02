@@ -10,8 +10,8 @@ Live: <https://renanmiqueloti.vercel.app>
 
 | Camada | Tecnologia | Por quê |
 |---|---|---|
-| Framework | Next.js 12 (SSG) | i18n nativo `pt-BR` / `en` sem rewrites manuais; saída 100% estática para edge cache no Vercel |
-| UI | React 18 + TypeScript | Tipagem nas mensagens i18n para impedir chave faltando entre locales |
+| Framework | Next.js 15 (Pages Router, SSG) | i18n nativo `pt-BR` / `en` sem rewrites manuais; páginas estáticas cacheadas no edge do Vercel |
+| UI | React 19 + TypeScript | Tipagem nas mensagens i18n para impedir chave faltando entre locales |
 | Estilo | Tailwind CSS 3 | Componentes consistentes sem CSS-in-JS — bundle final < 30 kB de CSS |
 | SEO | next-seo + JSON-LD `Person` / `WebSite` | Metas estruturadas + OG + Twitter Card por locale |
 | Hosting | Vercel | SSG + edge + preview por PR |
@@ -96,6 +96,6 @@ npm start
 
 ## Deploy
 
-Push para `main1` -> Vercel build automático -> live em `renanmiqueloti.vercel.app`.
+Push para `main` -> Vercel build automático -> live em `renanmiqueloti.vercel.app`.
 
 Branch previews ativos para PRs.
