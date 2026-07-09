@@ -16,9 +16,13 @@ import {
   SITE_URL,
 } from "../lib/seo";
 import { useLocale } from "../lib/useLocale";
+import { useSectionViews } from "../lib/useSectionViews";
+
+const SECTION_IDS = ["about", "skills", "projects", "contact"];
 
 const Home: NextPage = () => {
   const { t, locale } = useLocale();
+  useSectionViews(SECTION_IDS);
   const m = t.meta;
   const canonical = locale === "en" ? `${SITE_URL}/en` : `${SITE_URL}/`;
   const ogImage = getOgImage(locale);

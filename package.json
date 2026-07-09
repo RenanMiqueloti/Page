@@ -14,6 +14,7 @@
   "dependencies": {
     "next": "^15.1.0",
     "next-seo": "^6.6.0",
+    "posthog-js": "^1.399.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0"
