@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Reveal } from "../Misc/Reveal.component";
 import { Window } from "../Misc/Window.component";
 import { useT } from "../../lib/useLocale";
+import { track } from "../../lib/analytics";
 
 const PER_PAGE = 2;
 
@@ -35,6 +36,12 @@ const Projects = () => {
                 href={featured.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  track("project_click", {
+                    title: featured.title,
+                    featured: true,
+                  })
+                }
                 className="group block h-full p-7 hover:bg-zinc-900/30 transition-colors"
               >
                 <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald-300/90">
@@ -82,6 +89,12 @@ const Projects = () => {
                       href={proj.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() =>
+                        track("project_click", {
+                          title: proj.title,
+                          featured: false,
+                        })
+                      }
                       className={`group block p-5 transition-colors ${
                         isDisabled
                           ? "opacity-45 cursor-not-allowed pointer-events-none grayscale-[40%] bg-zinc-950/85"
@@ -146,6 +159,7 @@ const Projects = () => {
               href={p.seeAllUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => track("projects_see_all_click")}
               className="group inline-flex items-center gap-2 px-5 py-2.5 border border-zinc-800 text-zinc-400 rounded-md font-mono text-sm hover:border-emerald-500/50 hover:text-emerald-300 transition-colors"
             >
               <span>{p.seeAllCta}</span>

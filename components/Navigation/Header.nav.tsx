@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useActiveSection } from "../../lib/useActiveSection";
 import { useLocale } from "../../lib/useLocale";
+import { track } from "../../lib/analytics";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -69,6 +70,7 @@ const Header = () => {
               <a
                 key={l.id}
                 href={`#${l.id}`}
+                onClick={() => track("nav_click", { section: l.id })}
                 aria-current={isActive ? "true" : undefined}
                 className={`relative font-mono text-[11px] tracking-[0.18em] uppercase px-3 py-1 transition-colors ${isActive ? "text-emerald-300" : "text-zinc-500 hover:text-zinc-200"}`}
               >
@@ -100,7 +102,13 @@ const Header = () => {
         <div className="flex items-center gap-2 sm:gap-3 font-mono text-[11px] text-zinc-500 shrink-0">
           <button
             type="button"
-            onClick={toggle}
+            onClick={() => {
+              track("locale_toggle", {
+                from: locale,
+                to: locale === "pt" ? "en" : "pt",
+              });
+              toggle();
+            }}
             aria-label={`Switch language to ${t.header.localeToggleLabel}`}
             className="px-2 py-0.5 rounded border border-zinc-800 text-zinc-400 hover:text-emerald-300 hover:border-emerald-500/50 transition-colors text-[10px] tracking-[0.2em] uppercase"
           >
