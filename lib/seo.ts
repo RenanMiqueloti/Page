@@ -10,8 +10,8 @@ export type SeoLocale = "pt" | "en";
 const urlFor = (locale: SeoLocale) => (locale === "en" ? URL_EN : URL_ROOT);
 
 const PERSON_DESCRIPTION: Record<SeoLocale, string> = {
-  pt: "Renan Miqueloti constrói agentes com tool-use, MCP, RAG e modelos preditivos — com evals, observabilidade e foco em qualidade de engenharia.",
-  en: "Renan Miqueloti builds agents with tool-use, MCP, RAG and predictive models — with evals, observability and engineering quality.",
+  pt: "Renan Miqueloti constrói e opera agents em produção — tool-use, MCP, RAG, evals e observabilidade, com foco em qualidade de engenharia.",
+  en: "Renan Miqueloti builds and operates agents in production — tool-use, MCP, RAG, evals and observability, with a focus on engineering quality.",
 };
 
 const OG_IMAGE_ALT: Record<SeoLocale, string> = {
@@ -57,7 +57,7 @@ export const getPersonJsonLd = (locale: SeoLocale) => ({
     "AI Engineering", "Agentic AI", "Machine Learning", "LLMs",
     "LangChain", "LangGraph", "Model Context Protocol (MCP)", "RAG",
     "Evals", "MLOps", "Observability", "LangSmith", "Langfuse",
-    "AWS", "GCP", "Python", "PyTorch",
+    "AWS", "Python", "PyTorch",
   ],
 });
 

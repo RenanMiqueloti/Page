@@ -45,3 +45,4 @@ take_fullpage.py
 portfolio_fullpage.png
 portfolio_screenshot.png
 tsconfig.tsbuildinfo
+.env*
