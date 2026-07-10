@@ -27,8 +27,8 @@ const PERSONA = {
   email: "renanmiqueloti@gmail.com",
   github: "https://github.com/RenanMiqueloti",
   linkedin: "https://www.linkedin.com/in/renanmiqueloti",
-  focus: "agentes, RAG e modelos preditivos",
-  approach: "do experimento ao deploy, com evals e observabilidade",
+  focus: "agents, RAG e AI Ops",
+  approach: "evals e observabilidade como padrão",
   bio: "AI Engineer focado em arquitetura de sistemas LLM.",
   bioLong:
     "Atuação em retrieval, evals e observabilidade aplicados a pipelines de IA.",
@@ -36,25 +36,26 @@ const PERSONA = {
 
 const SKILL_LINES: [string, string][] = [
   ["01 Agents", "LangGraph, LangChain, MCP, tool-use, multi-agent, memory, guardrails"],
-  ["02 LLM", "Claude, prompt engineering, embeddings, HuggingFace, fine-tuning, LoRA"],
-  ["03 RAG", "chunking, hybrid search, re-ranking, Weaviate, pgvector, Qdrant"],
-  ["04 ML", "PyTorch, scikit-learn, pandas, NumPy, time series, SHAP, computer vision"],
+  ["02 LLM", "Claude, OpenAI, prompt engineering, embeddings, HuggingFace"],
+  ["03 RAG", "chunking, hybrid search, re-ranking, Qdrant, pgvector"],
+  ["04 ML", "PyTorch, scikit-learn, pandas, computer vision"],
   ["05 Ops", "LangSmith, Langfuse, evals, tracing, Docker, CI/CD"],
-  ["06 Infra", "Python, TypeScript, FastAPI, Pydantic, Postgres, Redis, Neo4j, AWS, GCP"],
+  ["06 Infra", "Python, TypeScript, FastAPI, Pydantic, Postgres, Redis, AWS"],
 ];
 
 const FOCUS_LINES: [string, string][] = [
-  ["FOCUS", "agentes com tool-use, RAG e modelos preditivos."],
-  ["MODE", "do experimento ao deploy, com evals e observabilidade."],
-  ["STACK", "LangGraph, LangChain, MCP, Weaviate, Python, PyTorch, FastAPI."],
+  ["FOCUS", "agents com tool-use, RAG e AI Ops."],
+  ["MODE", "evals e observabilidade como padrão."],
+  ["STACK", "LangGraph, LangChain, MCP, Qdrant, Python, FastAPI, AWS."],
 ];
 
 const EXPERIENCE_LINES: [string, string][] = [
-  ["CURRENT", "AI Engineer @ Tamy AI — agentes multi-tool com handoff humano e RAG sobre bases internas."],
+  ["CURRENT", "AI Ops Engineer — PJ — deploy e orquestração de agents em produção (2025–)."],
+  ["PREVIOUS", "AI Engineer @ Tamy AI — agents HITL e RAG sobre bases internas (2025–2026)."],
   ["PREVIOUS", "Data Scientist @ WEG — IA/ML para indústria (2023–2025)."],
   [
     "FOUNDATION",
-    "TI / Análise de sistemas @ BirminD · estágio web @ Melhor Escola (2018–2023).",
+    "TI / Análise de sistemas @ BirminD (2021–2023) · estágio web @ Melhor Escola (2019–2021).",
   ],
   ["DEGREE", "Computer & Information Sciences (2019–2023)."],
 ];
@@ -89,20 +90,22 @@ const TREE = `~/renan.agent/
 ├── experience.log
 ├── contact.txt
 ├── projects/
-│   ├── agents-AI/
+│   ├── langgraph-lobisomem/
 │   ├── rag-chatbot/
+│   ├── agents-AI/
 │   └── mcp-tools-server/
 └── experience/
-    ├── 2025-tamy-ai/      (current)
-    ├── 2023-weg/          (1y 10m)
-    ├── 2022-birmind/      (1y 6m)
-    └── 2018-melhor-escola/`;
+    ├── 2025-pj-ai-ops/    (current)
+    ├── 2025-tamy-ai/
+    ├── 2023-weg/
+    ├── 2021-birmind/
+    └── 2019-melhor-escola/`;
 
 const PS_TABLE = `USER   PID   %CPU  %MEM  COMMAND
 renan  0001  4.2   ∞     /usr/bin/agent --model=claude
 renan  0042  0.1   0.5   langchain-runtime --tools=rag,vector
 renan  0099  0.0   0.2   python --venv=ai
-renan  0231  2.1   0.4   pytorch-fine-tune --lr=3e-5
+renan  0231  2.1   0.4   rag-pipeline --hybrid --rerank=cross-encoder
 renan  0314   *     *    you (idle, but curious)`;
 
 const toLogLines = (label: string, items: [string, string][]): Line[] => [
@@ -125,7 +128,7 @@ const FAKE_FILES: Record<string, () => Line[]> = {
   "focus":     "${PERSONA.focus}",
   "approach":  "${PERSONA.approach}",
   "stack":     ["python", "langgraph", "claude", "pytorch", "fastapi"],
-  "available": "selective"
+  "available": "open"
 }`,
     },
   ],
@@ -135,11 +138,11 @@ const FAKE_FILES: Record<string, () => Line[]> = {
       tone: "amber",
       text: `{
   "agents":  ["langgraph", "langchain", "mcp", "tool-use", "memory"],
-  "llm":     ["claude", "prompt-eng", "embeddings", "fine-tuning", "lora"],
-  "rag":     ["chunking", "hybrid-search", "re-ranking", "weaviate", "pgvector"],
-  "ml":      ["pytorch", "sklearn", "time-series", "shap", "computer-vision"],
+  "llm":     ["claude", "openai", "prompt-eng", "embeddings"],
+  "rag":     ["chunking", "hybrid-search", "re-ranking", "qdrant", "pgvector"],
+  "ml":      ["pytorch", "sklearn", "pandas", "computer-vision"],
   "ops":     ["langsmith", "langfuse", "evals", "tracing", "docker", "ci/cd"],
-  "infra":   ["python", "typescript", "fastapi", "pydantic", "postgres", "redis", "neo4j"]
+  "infra":   ["python", "typescript", "fastapi", "pydantic", "postgres", "redis", "aws"]
 }`,
     },
   ],
@@ -282,7 +285,7 @@ export const AgentTerminal = ({
                   ["OS", "AGENT.OS v0.4.2"],
                   ["Host", "renanmiqueloti.vercel.app"],
                   ["Shell", "zsh (renan.agent)"],
-                  ["Uptime", "∞ since 2018"],
+                  ["Uptime", "∞ since 2019"],
                   ["Role", PERSONA.role],
                   ["Focus", PERSONA.focus],
                   ["Mode", "hands-on · honesto sobre escopo"],
@@ -316,12 +319,13 @@ export const AgentTerminal = ({
               </div>
               <div className="space-y-3">
                 {([
-                  ["2025", "AI Engineer @ Tamy AI", "atual · remoto", "agentes de IA com LLMs · automação de decisões financeiras e operacionais"],
-                  ["2023", "Data Scientist @ WEG", "1 ano 10 meses", "IA/ML aplicada a automação e otimização de processos industriais"],
-                  ["2022", "TI / Análise de sistemas @ BirminD", "1 ano 6 meses", "Git · Looker · Python · suporte e análise"],
-                  ["2018", "Estágio Web @ Melhor Escola", "1 ano 4 meses", "front-end e suporte"],
+                  ["2025", "AI Ops Engineer — PJ", "atual · remoto", "deploy e orquestração de agents em produção"],
+                  ["2025", "AI Engineer @ Tamy AI", "2025–2026", "agentes de IA com LLMs · automação de decisões financeiras e operacionais"],
+                  ["2023", "Data Scientist @ WEG", "2023–2025", "IA/ML aplicada a automação e otimização de processos industriais"],
+                  ["2021", "TI / Análise de sistemas @ BirminD", "2021–2023", "Git · Looker · Python · suporte e análise"],
+                  ["2019", "Estágio Web @ Melhor Escola", "2019–2021", "front-end e suporte"],
                 ] as const).map(([year, title, meta, desc]) => (
-                  <CvRow key={year} year={year} title={title} meta={meta} desc={desc} />
+                  <CvRow key={title} year={year} title={title} meta={meta} desc={desc} />
                 ))}
               </div>
               <div className="text-zinc-600 mt-3 text-[12px]">
@@ -352,8 +356,9 @@ export const AgentTerminal = ({
 
     if (cmd === "projects" || cmd === "proj") {
       const projs: [string, string][] = [
+        ["  → máfia game · Lobisomem multi-agent com LangGraph · demo", "https://renanmiq-langgraph-lobisomem.hf.space"],
+        ["  → rag-chatbot · Qdrant + hybrid retrieval + cross-encoder rerank · demo", "https://renanmiq-rag-chatbot.hf.space"],
         ["  → agents-AI · LangGraph + MCP + HITL + evals", "https://github.com/RenanMiqueloti/agents-AI"],
-        ["  → rag-chatbot · Qdrant + hybrid retrieval + cross-encoder rerank", "https://github.com/RenanMiqueloti/rag-chatbot"],
         ["  → mcp-tools-server · custom MCP server", "https://github.com/RenanMiqueloti/mcp-tools-server"],
         ["  → todos os repos públicos", PERSONA.github],
       ];
