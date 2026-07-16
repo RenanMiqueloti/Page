@@ -50,12 +50,12 @@ const FOCUS_LINES: [string, string][] = [
 ];
 
 const EXPERIENCE_LINES: [string, string][] = [
-  ["CURRENT", "AI Ops Engineer — PJ — deploy e orquestração de agents em produção (2025–)."],
+  ["CURRENT", "AI Engineer @ Cruzeiro do Sul — via miqueloti.tech (PJ) — deploy e orquestração de agents em produção (2026–)."],
   ["PREVIOUS", "AI Engineer @ Tamy AI — agents HITL e RAG sobre bases internas (2025–2026)."],
   ["PREVIOUS", "Data Scientist @ WEG — IA/ML para indústria (2023–2025)."],
   [
     "FOUNDATION",
-    "TI / Análise de sistemas @ BirminD (2021–2023) · estágio web @ Melhor Escola (2019–2021).",
+    "TI / Análise de sistemas @ BirminD (2022–2023) · estágio web @ Melhor Escola (2018–2019).",
   ],
   ["DEGREE", "Computer & Information Sciences (2019–2023)."],
 ];
@@ -95,11 +95,11 @@ const TREE = `~/renan.agent/
 │   ├── agents-AI/
 │   └── mcp-tools-server/
 └── experience/
-    ├── 2025-pj-ai-ops/    (current)
+    ├── 2026-cruzeiro-do-sul/    (current)
     ├── 2025-tamy-ai/
     ├── 2023-weg/
-    ├── 2021-birmind/
-    └── 2019-melhor-escola/`;
+    ├── 2022-birmind/
+    └── 2018-melhor-escola/`;
 
 const PS_TABLE = `USER   PID   %CPU  %MEM  COMMAND
 renan  0001  4.2   ∞     /usr/bin/agent --model=claude
@@ -285,7 +285,7 @@ export const AgentTerminal = ({
                   ["OS", "AGENT.OS v0.4.2"],
                   ["Host", "renanmiqueloti.vercel.app"],
                   ["Shell", "zsh (renan.agent)"],
-                  ["Uptime", "∞ since 2019"],
+                  ["Uptime", "∞ since 2018"],
                   ["Role", PERSONA.role],
                   ["Focus", PERSONA.focus],
                   ["Mode", "hands-on · honesto sobre escopo"],
@@ -319,11 +319,11 @@ export const AgentTerminal = ({
               </div>
               <div className="space-y-3">
                 {([
-                  ["2025", "AI Ops Engineer — PJ", "atual · remoto", "deploy e orquestração de agents em produção"],
+                  ["2026", "AI Engineer @ Cruzeiro do Sul", "atual · via miqueloti.tech", "deploy e orquestração de agents em produção"],
                   ["2025", "AI Engineer @ Tamy AI", "2025–2026", "agentes de IA com LLMs · automação de decisões financeiras e operacionais"],
                   ["2023", "Data Scientist @ WEG", "2023–2025", "IA/ML aplicada a automação e otimização de processos industriais"],
-                  ["2021", "TI / Análise de sistemas @ BirminD", "2021–2023", "Git · Looker · Python · suporte e análise"],
-                  ["2019", "Estágio Web @ Melhor Escola", "2019–2021", "front-end e suporte"],
+                  ["2022", "TI / Análise de sistemas @ BirminD", "2022–2023", "Git · Looker · Python · suporte e análise"],
+                  ["2018", "Estágio Web @ Melhor Escola", "2018–2019", "front-end e suporte"],
                 ] as const).map(([year, title, meta, desc]) => (
                   <CvRow key={title} year={year} title={title} meta={meta} desc={desc} />
                 ))}
