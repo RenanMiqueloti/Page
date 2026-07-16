@@ -107,7 +107,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       subtitleStrong: "AI Engineer",
       subtitleBody:
         " — sistemas com LLMs e ML aplicado.",
-      bridgeForNonTech: "5 anos em dados e tecnologia · 3 em IA aplicada · 2 em agents, RAG e AI Ops.",
+      bridgeForNonTech: "5 anos em dados e tecnologia · 3 em IA aplicada · 1 em agents, RAG e AI Ops.",
       ctaPrimary: "$ ver projetos",
       ctaSecondary: "vamos conversar",
       avatarFooter: "Brasil · remoto",
@@ -122,7 +122,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[  └─ now]",
-          text: "AI Ops Engineer — deploy e orquestração de agents em produção.",
+          text: "AI Engineer @ Cruzeiro do Sul — deploy e orquestração de agents em produção (2026–).",
         },
         {
           tag: "[  └─ prev]",
@@ -134,11 +134,11 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[FOUNDATION]",
-          text: "TI & análise de sistemas @ BirminD (2021–2023).",
+          text: "TI & análise de sistemas @ BirminD (2022–2023).",
         },
         {
           tag: "[INTERN]",
-          text: "Estágio web @ Melhor Escola (2019–2021).",
+          text: "Estágio web @ Melhor Escola (2018–2019).",
         },
         {
           tag: "[DEGREE]",
@@ -150,7 +150,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         { key: "role", value: "ai engineer · mid/senior · pj" },
         { key: "focus", value: "aiops · agents · rag · mlops" },
         { key: "stack", value: "python · langgraph · aws · fastapi · mcp" },
-        { key: "since", value: "2021 (dados) · 2023 (ai/ml) · 2024 (agents)" },
+        { key: "since", value: "2018 (tech) · 2022 (dados) · 2023 (ai/ml) · 2025 (agents)" },
         { key: "location", value: "remoto · brasil · gmt-3" },
         { key: "langs", value: "pt-br (nativo) · en (B2)" },
       ],
@@ -324,7 +324,7 @@ export const MESSAGES: Record<Locale, Messages> = {
       subtitleStrong: "AI Engineer",
       subtitleBody:
         " — LLM systems and applied ML.",
-      bridgeForNonTech: "5 years in data & tech · 3 in applied AI · 2 in agents, RAG and AI Ops.",
+      bridgeForNonTech: "5 years in data & tech · 3 in applied AI · 1 in agents, RAG and AI Ops.",
       ctaPrimary: "$ see projects",
       ctaSecondary: "let's talk",
       avatarFooter: "Brazil · remote",
@@ -339,7 +339,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[  └─ now]",
-          text: "AI Ops Engineer — production agent deployment and orchestration.",
+          text: "AI Engineer @ Cruzeiro do Sul — production agent deployment and orchestration (2026–).",
         },
         {
           tag: "[  └─ prev]",
@@ -351,11 +351,11 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[FOUNDATION]",
-          text: "IT & systems analysis @ BirminD (2021–2023).",
+          text: "IT & systems analysis @ BirminD (2022–2023).",
         },
         {
           tag: "[INTERN]",
-          text: "Web internship @ Melhor Escola (2019–2021).",
+          text: "Web internship @ Melhor Escola (2018–2019).",
         },
         {
           tag: "[DEGREE]",
@@ -367,7 +367,7 @@ export const MESSAGES: Record<Locale, Messages> = {
         { key: "role", value: "ai engineer · mid/senior · contractor (pj)" },
         { key: "focus", value: "aiops · agents · rag · mlops" },
         { key: "stack", value: "python · langgraph · aws · fastapi · mcp" },
-        { key: "since", value: "2021 (data) · 2023 (ai/ml) · 2024 (agents)" },
+        { key: "since", value: "2018 (tech) · 2022 (data) · 2023 (ai/ml) · 2025 (agents)" },
         { key: "location", value: "remote · brazil · gmt-3" },
         { key: "langs", value: "en (B2) · pt-br (native)" },
       ],
