@@ -6,7 +6,7 @@ class MyDocument extends Document {
   render() {
     const locale = this.props.__NEXT_DATA__?.locale || "pt-BR";
     return (
-      <Html lang={locale}>
+      <Html lang={locale} data-scroll-behavior="smooth">
         <Head>
           <script dangerouslySetInnerHTML={{ __html: LOCALE_DETECT_SCRIPT }} />
           <meta name="theme-color" content="#09090b" />
