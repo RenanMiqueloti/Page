@@ -52,11 +52,8 @@ const FOCUS_LINES: [string, string][] = [
 const EXPERIENCE_LINES: [string, string][] = [
   ["CURRENT", "AI Engineer @ Cruzeiro do Sul — via miqueloti.tech (PJ) — deploy e orquestração de agents em produção (2026–)."],
   ["PREVIOUS", "AI Engineer @ Tamy AI — agents HITL e RAG sobre bases internas (2025–2026)."],
-  ["PREVIOUS", "Data Scientist @ WEG — IA/ML para indústria (2023–2025)."],
-  [
-    "FOUNDATION",
-    "TI / Análise de sistemas @ BirminD (2022–2023) · estágio web @ Melhor Escola (2018–2019).",
-  ],
+  ["WEG", "tempo integral (2022–2025) — Data Scientist (2023–2025) · Analista de sistemas @ BirminD (2022–2023)."],
+  ["INTERN", "Estágio web @ Melhor Escola (2018–2019)."],
   ["DEGREE", "Computer & Information Sciences (2019–2023)."],
 ];
 
@@ -95,10 +92,12 @@ const TREE = `~/renan.agent/
 │   ├── agents-AI/
 │   └── mcp-tools-server/
 └── experience/
-    ├── 2026-cruzeiro-do-sul/    (current)
-    ├── 2025-tamy-ai/
-    ├── 2023-weg/
-    ├── 2022-birmind/
+    ├── miqueloti-tech/
+    │   ├── 2026-cruzeiro-do-sul/    (current)
+    │   └── 2025-tamy-ai/
+    ├── weg/
+    │   ├── 2023-data-scientist/
+    │   └── 2022-birmind/
     └── 2018-melhor-escola/`;
 
 const PS_TABLE = `USER   PID   %CPU  %MEM  COMMAND
@@ -192,12 +191,14 @@ export const AgentTerminal = ({
       { t: "sys", text: `[ready] agent online @ ${PERSONA.location}` },
       { t: "agent", text: "Olá. Sou o agent do Renan. Digite `help` ou tente `neofetch`." },
     ];
+    setLines([]);
     let i = 0;
     const tick = () => {
       if (cancelled) return;
       if (i >= seq.length) return;
-      setLines((l) => [...l, seq[i]]);
+      const ln = seq[i];
       i++;
+      setLines((l) => [...l, ln]);
       setTimeout(tick, 200 + Math.random() * 160);
     };
     tick();
@@ -322,7 +323,7 @@ export const AgentTerminal = ({
                   ["2026", "AI Engineer @ Cruzeiro do Sul", "atual · via miqueloti.tech", "deploy e orquestração de agents em produção"],
                   ["2025", "AI Engineer @ Tamy AI", "2025–2026", "agentes de IA com LLMs · automação de decisões financeiras e operacionais"],
                   ["2023", "Data Scientist @ WEG", "2023–2025", "IA/ML aplicada a automação e otimização de processos industriais"],
-                  ["2022", "TI / Análise de sistemas @ BirminD", "2022–2023", "Git · Looker · Python · suporte e análise"],
+                  ["2022", "Analista de sistemas @ BirminD (WEG)", "2022–2023", "Git · Looker · Python · suporte e análise"],
                   ["2018", "Estágio Web @ Melhor Escola", "2018–2019", "front-end e suporte"],
                 ] as const).map(([year, title, meta, desc]) => (
                   <CvRow key={title} year={year} title={title} meta={meta} desc={desc} />
