@@ -1,8 +1,7 @@
+const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     const securityHeaders = [
       { key: "X-Frame-Options", value: "DENY" },
@@ -23,16 +22,26 @@ const nextConfig = {
     defaultLocale: "pt-BR",
     localeDetection: false,
   },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.watchOptions = {
-        poll: 800,
-        aggregateTimeout: 250,
-        ignored: ["**/node_modules", "**/.next", "**/.git"],
-      };
-    }
-    return config;
-  },
 };
 
-module.exports = nextConfig;
+module.exports = (phase) => {
+  if (phase === PHASE_DEVELOPMENT_SERVER) {
+    return {
+      ...nextConfig,
+      // dev roda com --webpack: watcher com polling, único que enxerga
+      // mudanças em /mnt/c (drvfs) no WSL. Build usa Turbopack e não
+      // aceita chave webpack, por isso o config é função por fase.
+      webpack: (config, { dev }) => {
+        if (dev) {
+          config.watchOptions = {
+            poll: 800,
+            aggregateTimeout: 250,
+            ignored: ["**/node_modules", "**/.next", "**/.git"],
+          };
+        }
+        return config;
+      },
+    };
+  }
+  return nextConfig;
+};
