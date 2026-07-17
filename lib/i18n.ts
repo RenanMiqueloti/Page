@@ -130,11 +130,15 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — ML para automação industrial (2023–2025).",
+          text: "WEG (2022–2025)",
         },
         {
-          tag: "[FOUNDATION]",
-          text: "TI & análise de sistemas @ BirminD (2022–2023).",
+          tag: "[  └─ ds]",
+          text: "Data Scientist — ML para automação industrial (2023–2025).",
+        },
+        {
+          tag: "[  └─ sys]",
+          text: "Analista de sistemas @ BirminD — Indústria 4.0 (2022–2023).",
         },
         {
           tag: "[INTERN]",
@@ -347,11 +351,15 @@ export const MESSAGES: Record<Locale, Messages> = {
         },
         {
           tag: "[PREVIOUS]",
-          text: "Data Scientist @ WEG — ML for industrial automation (2023–2025).",
+          text: "WEG (2022–2025)",
         },
         {
-          tag: "[FOUNDATION]",
-          text: "IT & systems analysis @ BirminD (2022–2023).",
+          tag: "[  └─ ds]",
+          text: "Data Scientist — ML for industrial automation (2023–2025).",
+        },
+        {
+          tag: "[  └─ sys]",
+          text: "Systems analyst @ BirminD — Industry 4.0 (2022–2023).",
         },
         {
           tag: "[INTERN]",
