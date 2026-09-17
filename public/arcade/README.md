@@ -7,35 +7,37 @@ Rodar: `npm run dev` e abrir `/arcade/index.html`.
 Debug: `?debug=1` expõe `window.SUBNET` (`SUBNET.spawn("boss")`,
 `SUBNET.startWave(9)`, `SUBNET.player`).
 
-## Como o visual foi decidido
+## Identidade visual
 
-Esta é a segunda versão. A primeira preenchia cada célula com caractere de
-sombreamento por distância e ficava achatada e leitosa. A reescrita saiu da
-observação de um frame real de um FPS ASCII que funciona, e três medidas
-guiaram tudo:
+O jogo tem premissa própria: **você é o agente e o mapa é o seu runtime**. Não é
+um datacenter genérico — é o portfólio jogável de quem constrói agentes.
 
-**Grade fina.** ~240 colunas, célula de ~6px. Com célula grande o preenchimento
-lê como textura de texto; com célula pequena, lê como cor sólida.
+**Duas cores saturadas, com significado fixo.** Esmeralda é *seu* (rota que dá
+pra pisar, munição, o acento do portfólio). Âmbar é *anomalia* (hostil). Rosa só
+aparece quando você toma dano — tela rosa é urgência real, não decoração. Todo o
+resto é preto-violeta quente e cinza-lilás. Paleta com papel definido troca
+"bonito" por legível: você sabe o que é uma coisa antes de reconhecer a forma.
 
-**Sombreamento chapado.** Cada face recebe UMA cor, escolhida pela orientação e
-pela altura — não um gradiente por distância. O relevo vem do contraste entre
-faces vizinhas. A névoa só escurece em degraus grossos (`fade()`), porque
-gradiente fino em caractere vira ruído.
+**A parede tem endereço.** O detalhe de superfície são fragmentos hex
+(`0x`, `7f`, `a3`), não tracinho decorativo — o mundo é memória, então ele
+mostra memória.
 
-**Luminância calibrada, não estimada.** A referência tem média 28/255, 90% dos
-pixels abaixo de 46, e menos de 2% acima de 80. A paleta daqui foi ajustada até
-cair na mesma distribuição (média 32, p90 43, 1,5% acima de 80). Cinza claro
-demais é o erro mais fácil de cometer: a cena inteira embranquece.
+**O HUD não usa caixa.** Cantos em colchete, uma régua fina e barras
+segmentadas: vida em 20 blocos, munição tique a tique (um por bala). Você lê
+quanto resta sem ler número nenhum.
 
-Duas consequências de implementação:
+**Luminância calibrada, não estimada.** Média ~28/255, a mesma faixa de um FPS
+ASCII de referência que funciona. Cinza claro demais é o erro mais fácil de
+cometer: a cena inteira embranquece.
 
-- **Preenchimento é retângulo, não glifo.** A célula sólida usa um código
-  sentinela e vira `fillRect` no flush — sem costura entre linhas, e mais rápido
-  que `fillText`. Caractere fica para o que é detalhe: linha de painel, quina,
-  malha do piso, plaqueta de hostil.
-- **HUD em DOM.** Número grande com tipografia de verdade lê melhor que qualquer
-  coisa desenhada em célula, e a grade sobra inteira para o mundo. Na grade só
-  fica o que pertence ao espaço 3D: mira, marcador de acerto, borda de dano.
+Consequências de implementação que sustentam tudo isso:
+
+- **Grade fina** (~240 colunas, célula de ~6px): preenchimento lê como cor
+  sólida, não como textura de texto.
+- **Sombreamento chapado por face**, com névoa em degraus grossos. O relevo vem
+  do contraste entre faces vizinhas; gradiente fino em caractere vira ruído.
+- **Célula sólida vira `fillRect`**, não glifo: sem costura entre linhas e mais
+  rápido que `fillText`. Caractere fica só para o detalhe.
 
 ## Como o mundo é renderizado
 
@@ -51,20 +53,32 @@ isso que cobertura vale igual para a bala e para a linha de visão da IA.
 
 ## Nível e navegação
 
-O mapa é construído por operações (`rect`, `ring`, `stairs`), não por arte ASCII
-— pátio grande com arquitetura afastada é o que cria linha de horizonte.
+O mapa é um piso de racks: fileiras longas e paralelas com corredor entre elas,
+uma passarela cruzando tudo e uma praça ao sul. Corredor dá linha de tiro
+comprida; praça dá respiro. Construído por operações (`rect`, `ring`, `stairs`),
+não por arte ASCII.
 
-Dois invariantes que o código garante sozinho:
+Navegação é campo de fluxo BFS a partir da célula do player, recalculado 4x/s.
+Três invariantes que o código garante — cada um veio de um bug que o teste
+headless pegou, todos da mesma família (**a navegação mentindo sobre o que o
+corpo consegue fazer**):
 
-- `reachable()` faz flood fill com as MESMAS regras de passo do jogo, e
-  `placeSpawns()` só aceita spawn em célula comprovadamente conectada ao início.
-  Sem isso, editar o nível gera região ilhada e a onda nunca termina — foi
-  exatamente o bug que apareceu no primeiro teste desta versão.
-- Toda plataforma alta precisa de escada dos dois lados: 1.52 de uma vez é
-  intransponível com `stepUp` de 0.42, e um desnível desses vira parede.
+1. **O ator não é um ponto.** `bodyH` guarda a altura vista por um corpo de raio
+   `CFG.radius` no centro de cada célula, e é isso — não a altura crua — que a
+   busca usa. Sem isso, a rota aprova corredor onde o inimigo não cabe: ele mira
+   o centro da célula, trava na quina e o desvio o joga pra fora da rota.
+2. **Fluxo menor não significa alcançável.** O vizinho pode ter sido alcançado
+   pelo outro lado. `flowStep` só aceita vizinho que respeite `stepUp` a partir
+   de onde o bicho está — senão ele escolhe uma face 0.76 acima e empurra parede
+   pra sempre.
+3. **Todo spawn precisa de rota provada.** `reachable()` faz flood fill com as
+   mesmas regras de passo e `placeSpawns()` só aceita célula conectada ao
+   início, numa faixa de distância (não no ponto mais longe, senão a onda leva
+   meio minuto andando antes de virar jogo).
 
-A IA usa campo de fluxo BFS a partir da célula do player, recalculado 4x/s: cada
-hostil só desce o gradiente, o que basta pra contornar torre e subir escada.
+E uma regra de nível: toda plataforma alta precisa de escada **dos dois lados**.
+1.52 de uma vez é intransponível com `stepUp` de 0.42, e um desnível desses vira
+parede invisível que ilha metade do mapa.
 
 ## Onde mexer
 
@@ -73,14 +87,15 @@ hostil só desce o gradiente, o que basta pra contornar torre e subir escada.
 | Movimento, dano, cadência | `CFG` |
 | Layout do nível | `buildLevel()` |
 | Paleta | `PALETTE` + o mapa de papéis em `P` |
+| Fragmentos de superfície | `HEX` |
 | Novo tipo de hostil | `TYPES` + arte em `ART` |
 | Composição das ondas | `startWave()` |
 | Nome das zonas do HUD | `ZONES` |
-| Silhueta da arma | `AK` (retângulos; altura em linhas ÷ 1.45) |
+| Silhueta da arma | `AK` (eixo do cano × deslocamento, em proporção real) |
 | Efeitos sonoros | `sfx()` — WebAudio, sem asset |
 
 ## Pendências conhecidas
 
 - Sem suporte a touch: precisa de mouse e teclado.
 - Sem recorde persistente (dá pra plugar `localStorage` em `gameOver()`).
-- A arma é uma silhueta de caixas: lê como AK de longe, sem detalhe fino de perto.
+- A arma é uma silhueta de blocos: lê como AK, sem detalhe fino de perto.

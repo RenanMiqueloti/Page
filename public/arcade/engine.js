@@ -50,34 +50,35 @@
   };
 
   // --------------------------------------------------------------- paleta
-  // Amostrada do frame de referência: azul-ardósia muito escuro, arquitetura
-  // em cinza frio, e só duas cores saturadas em toda a tela.
+  // Identidade própria: preto-violeta quente (não azul-ardósia), estrutura em
+  // cinza-lilás, e só DUAS cores saturadas com significado fixo —
+  //   esmeralda = seu (rota segura, munição, o acento do portfólio)
+  //   âmbar     = anomalia (hostil)
+  // Rosa aparece só quando VOCÊ toma dano, então tela rosa = urgência real.
   const P = {
     sky: 0, void_: 1,
     s0: 2, s1: 3, s2: 4, s3: 5, s4: 6, s5: 7,   // estrutura, escuro -> claro
-    cy0: 8, cy1: 9, cy2: 10,                     // rota / superfície pisável
-    co0: 11, co1: 12,                            // hostil
-    boss: 13, ink: 14,
+    ok0: 8, ok1: 9, ok2: 10,                     // esmeralda: rota, seu
+    bad0: 11, bad1: 12,                          // âmbar: anomalia
+    boss: 13, ink: 14, hurt: 15,
   };
-  // Calibrada contra a distribuição de luminância do frame de referência:
-  // 90% da imagem abaixo de ~46, e menos de 2% acima de 80. Cinza claro demais
-  // é o erro mais fácil de cometer aqui — a cena inteira vira leitosa.
   const PALETTE = [
-    "#0d1216", // 0 céu
-    "#151c22", // 1 vazio / piso raso
-    "#1b232a", // 2 estrutura escura
-    "#222c34", // 3
-    "#2a353e", // 4 face principal
-    "#34404a", // 5
-    "#404d58", // 6 quina
-    "#55646f", // 7 quina viva (rara)
-    "#125e63", // 8 ciano apagado
-    "#167a75", // 9 ciano de borda de piso
-    "#2dd4bf", // 10 ciano vivo: lábio de plataforma
-    "#a33b2c", // 11 coral apagado
-    "#ff6b52", // 12 coral vivo
-    "#f2b705", // 13 boss
-    "#e8edf3", // 14 foco / flash
+    "#0b0910", // 0 céu
+    "#120f18", // 1 vazio / piso raso
+    "#191520", // 2 estrutura escura
+    "#221d2b", // 3
+    "#2d2637", // 4 face principal
+    "#3a3246", // 5
+    "#4a4159", // 6 quina
+    "#655b76", // 7 quina viva (rara)
+    "#10553f", // 8 esmeralda apagada
+    "#1c8a63", // 9
+    "#34d399", // 10 esmeralda viva
+    "#8a5312", // 11 âmbar apagado
+    "#ff9e3d", // 12 âmbar vivo: hostil
+    "#ffd166", // 13 boss
+    "#f4f1f7", // 14 foco / flash
+    "#ff4d6d", // 15 dano no player
   ];
 
   const SOLID = 1;         // código sentinela: célula preenchida (fillRect)
@@ -118,45 +119,50 @@
 
   function buildLevel() {
     height.fill(0);
-    ring(0, 0, MAP.w - 1, MAP.h - 1, 7);           // perímetro fechado e alto
-    rect(1, 1, MAP.w - 2, 2, 6.2);
+    ring(0, 0, MAP.w - 1, MAP.h - 1, 7);
 
-    // --- torres: dão a silhueta recortada da linha do horizonte
-    const towers = [
-      [6, 6, 15, 14, 4.6], [20, 4, 27, 11, 3.4], [33, 5, 41, 12, 5.2],
-      [46, 4, 53, 10, 3.0], [57, 6, 65, 15, 4.2],
-      [4, 22, 11, 30, 2.6], [61, 20, 67, 29, 3.2],
-      [5, 44, 13, 52, 3.8], [58, 43, 66, 53, 4.4],
-      [22, 60, 29, 67, 2.8], [43, 61, 50, 67, 3.6],
-    ];
-    for (const [x0, y0, x1, y1, h] of towers) {
-      rect(x0, y0, x1, y1, h);
-      rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, h * 0.78);   // recuo no topo
+    // Piso de racks, não pátio com torres: fileiras longas e paralelas com
+    // corredor entre elas. Corredor dá linha de tiro comprida e tensão; a
+    // praça ao sul dá respiro. É a silhueta que separa este mapa de um pátio.
+    const RACK_H = 2.9;
+    for (let bank = 0; bank < 2; bank++) {
+      const x0 = bank === 0 ? 8 : 40;
+      for (let i = 0; i < 4; i++) {
+        const x = x0 + i * 7;
+        rect(x, 8, x + 3, 33, RACK_H);
+        rect(x, 8, x + 3, 8, RACK_H * 0.74);       // cabeceira mais baixa
+        rect(x, 33, x + 3, 33, RACK_H * 0.74);
+        rect(x + 1, 14, x + 2, 14, 0);             // vãos de passagem
+        rect(x + 1, 24, x + 2, 24, 0);
+      }
     }
 
-    // --- passarela em L a 1.52. CADA lado precisa da própria escada: 1.52 de
-    //     uma vez é intransponível (stepUp 0.42), e sem isso o mapa fica com
-    //     região ilhada — inimigo nasce lá e nunca chega em você.
-    rect(14, 18, 57, 19, 1.52);
-    rect(14, 18, 15, 44, 1.52);
-    stairs(18, 20, 21, 23, 1.14, -0.38, "y");    // sul, oeste
-    stairs(50, 20, 53, 23, 1.14, -0.38, "y");    // sul, leste
-    stairs(30, 14, 33, 17, 0.00, 0.38, "y");     // norte
-    stairs(16, 45, 17, 48, 1.14, -0.38, "y");    // pé do braço oeste
+    // Passarela leste-oeste cruzando os dois bancos, com escada nas pontas e
+    // no meio — toda plataforma alta precisa de acesso dos dois lados.
+    rect(1, 19, 70, 20, 1.52);
+    stairs(4, 21, 8, 24, 1.14, -0.38, "y");
+    stairs(63, 21, 67, 24, 1.14, -0.38, "y");
+    stairs(4, 15, 8, 18, 0.00, 0.38, "y");     // norte, oeste
+    stairs(63, 15, 67, 18, 0.00, 0.38, "y");   // norte, leste
+    stairs(35, 15, 38, 18, 0.00, 0.38, "y");
+    stairs(35, 21, 38, 24, 1.14, -0.38, "y");
 
-    // --- plataforma central escalonada
-    rect(30, 36, 41, 45, 1.14);
-    ring(29, 35, 42, 46, 0.76);
-    ring(28, 34, 43, 47, 0.38);
+    // Blocos de serviço soltos no corredor central
+    for (const [x, y, h] of [[34, 10, 1.9], [34, 29, 1.9], [30, 38, 0.9], [41, 38, 0.9]]) {
+      rect(x, y, x + 3, y + 2, h);
+      rect(x, y + 3, x + 3, y + 3, 0.45);
+    }
 
-    // --- cobertura espalhada pelo pátio
-    for (const [x, y] of [[20, 32], [51, 32], [20, 50], [51, 50], [36, 28], [36, 54],
-                          [26, 41], [45, 41]]) {
+    // Praça sul: degraus largos descendo até a doca
+    rect(12, 40, 59, 47, 0.76);
+    rect(14, 42, 57, 45, 1.14);
+    rect(20, 48, 51, 48, 0.38);
+    for (const [x, y] of [[18, 54], [53, 54], [26, 60], [45, 60], [36, 57]]) {
       rect(x, y, x + 2, y + 2, 0.9);
-      rect(x, y + 3, x + 2, y + 3, 0.45);            // degrau pra subir
+      rect(x, y + 3, x + 2, y + 3, 0.45);
     }
 
-    start = { x: 36.5, y: 56.5 };
+    start = { x: 36.5, y: 63.5 };
   }
   buildLevel();
 
@@ -170,13 +176,13 @@
     let head = 0, tail = 1;
     while (head < tail) {
       const cur = q[head++];
-      const cx = cur % MAP.w, cy = (cur / MAP.w) | 0, hc = height[cur];
+      const cx = cur % MAP.w, cy = (cur / MAP.w) | 0, hc = bodyH[cur];
       for (const [ox, oy] of N4) {
         const nx = cx + ox, ny = cy + oy;
         if (nx < 1 || ny < 1 || nx >= MAP.w - 1 || ny >= MAP.h - 1) continue;
         const ni = ny * MAP.w + nx;
         if (seen[ni]) continue;
-        const hn = height[ni];
+        const hn = bodyH[ni];
         if (hn >= 2 || Math.abs(hc - hn) > CFG.stepUp) continue;   // ida E volta
         seen[ni] = 1; q[tail++] = ni;
       }
@@ -192,20 +198,47 @@
     for (let y = 2; y < MAP.h - 2; y++) {
       for (let x = 2; x < MAP.w - 2; x++) {
         const i = y * MAP.w + x;
-        if (!ok[i] || height[i] > 0.05) continue;
+        if (!ok[i] || bodyH[i] > 0.05) continue;
         cand.push({ x: x + 0.5, y: y + 0.5, d: (x - start.x) ** 2 + (y - start.y) ** 2 });
       }
     }
-    cand.sort((a, b) => b.d - a.d);
+    // Faixa de distância, não o ponto mais distante: spawn no canto do mapa
+    // faz a onda levar meio minuto andando antes de virar jogo.
+    const IDEAL = 26 * 26;
+    cand.sort((a, b) => Math.abs(a.d - IDEAL) - Math.abs(b.d - IDEAL));
     spawns.length = 0;
     for (const c of cand) {
       if (spawns.length >= 10) break;
       // espalha: nada de dez spawns colados no mesmo canto
-      if (spawns.every((s) => (s.x - c.x) ** 2 + (s.y - c.y) ** 2 > 100)) spawns.push(c);
+      if (spawns.every((s) => (s.x - c.x) ** 2 + (s.y - c.y) ** 2 > 144)) spawns.push(c);
     }
     if (!spawns.length) spawns.push({ x: start.x + 6, y: start.y });
   }
 
+  // Amostra de corpo: o ator não é um ponto, então "o que tem sob mim" é a
+  // maior altura sob o círculo do raio. Fica aqui em cima porque a navegação
+  // do nível depende disso antes de qualquer coisa do player existir.
+  const OFFS = [[0, 0], [-CFG.radius, -CFG.radius], [CFG.radius, -CFG.radius],
+                [-CFG.radius, CFG.radius], [CFG.radius, CFG.radius]];
+  function floorUnder(x, y) {
+    let h = 0;
+    for (let i = 0; i < OFFS.length; i++) {
+      const v = heightAt(x + OFFS[i][0], y + OFFS[i][1]);
+      if (v > h) h = v;
+    }
+    return h;
+  }
+
+  // Altura vista POR UM CORPO de raio CFG.radius no centro de cada célula.
+  // Navegação por célula pura aprova corredor onde o inimigo não cabe: ele
+  // mira o centro, trava na quina e o desvio o joga pra fora da rota.
+  const bodyH = new Float32Array(MAP.w * MAP.h);
+  function bakeBody() {
+    for (let y = 0; y < MAP.h; y++) {
+      for (let x = 0; x < MAP.w; x++) bodyH[y * MAP.w + x] = floorUnder(x + 0.5, y + 0.5);
+    }
+  }
+  bakeBody();
   placeSpawns();
 
   function heightAt(x, y) {
@@ -304,6 +337,7 @@
 
   // ------------------------------------------------------------- raycaster
   const hash = (a, b) => (((a * 73856093) ^ (b * 19349663)) >>> 0) % 997;
+  const HEX = ["0x", "7f", "a3", "ff", "e1", "0b", "c4", "9d", "3e", "5a"];
 
   /** Degraus de escurecimento por distância — grossos de propósito: gradiente
    *  fino vira ruído, degrau largo lê como plano de profundidade. */
@@ -361,12 +395,14 @@
               // célula transforma o piso num tabuleiro e engole a cena.
               const gx = Math.floor(wx), gy = Math.floor(wy);
               const fx = wx - gx, fy = wy - gy;
-              const thr = Math.min(0.2, Math.max(0.02, dist * 0.01));
+              // fina de propósito: borda de piso é acento, não barra. Grossa
+              // demais ela compete com o HUD e some a arquitetura.
+              const thr = Math.min(0.085, Math.max(0.015, dist * 0.005));
               const diff = (ox, oy) => heightAt(gx + ox + 0.5, gy + oy + 0.5) !== prevH;
               const edge =
                 (fx < thr && diff(-1, 0)) || (fx > 1 - thr && diff(1, 0)) ||
                 (fy < thr && diff(0, -1)) || (fy > 1 - thr && diff(0, 1));
-              put(c, r, SOLID, edge ? Math.max(P.cy0, P.cy1 - (f >> 1)) : Math.max(P.void_, P.s0 - (f >> 1)), dist);
+              put(c, r, SOLID, edge ? Math.max(P.ok0, P.ok1 - (f >> 1)) : Math.max(P.void_, P.s0 - (f >> 1)), dist);
             } else {
               // pátio: praticamente vazio, só nós esparsos da malha
               const fx = wx - Math.floor(wx), fy = wy - Math.floor(wy);
@@ -391,7 +427,7 @@
           const tone = walk
             ? Math.max(P.s0, P.s1 - (f >> 1))
             : Math.max(P.s0, (side ? P.s1 : P.s2) - (f >> 1));
-          const lip = walk ? Math.max(P.cy0, P.cy2 - f) : Math.max(P.s1, P.s4 - f);
+          const lip = walk ? Math.max(P.ok0, P.ok2 - f) : Math.max(P.s1, P.s4 - f);
           const capOn = Math.ceil(yTop) >= 0;
 
           const hitU = side ? cam.x + rayX * t : cam.y + rayY * t;
@@ -401,10 +437,13 @@
             if (r === r0 && capOn) { put(c, r, SOLID, lip, t); continue; }
             const worldZ = eyeZ + (horizon - r) * tv;
             // detalhe esparso: linha de painel, não textura contínua
-            const mark = hash((hitU * 3) | 0, (worldZ * 4) | 0);
-            if (mark < 42 && t < 30) {
-              put(c, r, mark < 14 ? 45 /* - */ : mark < 28 ? 47 /* / */ : 61 /* = */,
-                  Math.min(P.s4, tone + 2), t);
+            // Detalhe de superfície são FRAGMENTOS HEX, não tracinho genérico:
+            // o mundo é o runtime do agente, então a parede tem endereço.
+            const mark = hash((hitU * 2) | 0, (worldZ * 3) | 0);
+            if (mark < 60 && t < 26) {
+              const glyph = HEX[mark % HEX.length];
+              const k = ((hitU * 2) | 0) & 1;
+              put(c, r, glyph.charCodeAt(k), Math.min(P.s5, tone + 2), t);
             } else {
               put(c, r, SOLID, tone, t);
             }
@@ -420,7 +459,7 @@
 
   // --------------------------------------------------------------- sprites
   const ART = {
-    worm: [
+    drift: [
       "   .---.   ",
       "  / o o \\  ",
       " |  ~~~  | ",
@@ -428,7 +467,7 @@
       "  /|   |\\  ",
       "   ^   ^   ",
     ],
-    trojan: [
+    injector: [
       "  _______  ",
       " |o     o| ",
       " |   ^   | ",
@@ -437,7 +476,7 @@
       "  |     |  ",
       "  L     J  ",
     ],
-    ransom: [
+    loop: [
       " ######### ",
       " #$     $# ",
       " #   _   # ",
@@ -489,7 +528,7 @@
       const r0 = Math.max(0, Math.ceil(rowTop));
       const r1 = Math.min(S.rows - 1, Math.floor(rowBottom));
       const artW = art[0].length, artH = art.length;
-      const tone = e.hitFlash > 0 ? P.ink : e.boss ? P.boss : ty < 22 ? P.co1 : P.co0;
+      const tone = e.hitFlash > 0 ? P.ink : e.boss ? P.boss : ty < 22 ? P.bad1 : P.bad0;
 
       if (e.def) {
         const mc = Math.round(midCol) - 1;
@@ -534,16 +573,6 @@
     queue: [], nextSpawn: 0, gap: 3.5, shake: 0, hitMark: 0, muted: false,
   };
 
-  const OFFS = [[0, 0], [-CFG.radius, -CFG.radius], [CFG.radius, -CFG.radius],
-                [-CFG.radius, CFG.radius], [CFG.radius, CFG.radius]];
-  function floorUnder(x, y) {
-    let h = 0;
-    for (let i = 0; i < OFFS.length; i++) {
-      const v = heightAt(x + OFFS[i][0], y + OFFS[i][1]);
-      if (v > h) h = v;
-    }
-    return h;
-  }
   function slideAxis(a, nx, ny) {
     const h = floorUnder(nx, ny);
     if (h > a.z + CFG.stepUp) return false;
@@ -666,12 +695,12 @@
 
   // --------------------------------------------------------------- combate
   const TYPES = {
-    worm:   { art: "worm",   hp: 42,  speed: 3.0,  dmg: 9,  w: 0.8,  h: 0.95, range: 1.1, rate: 0.9, score: 10 },
-    trojan: { art: "trojan", hp: 80,  speed: 2.0,  dmg: 13, w: 0.9,  h: 1.15, range: 12,  rate: 1.8, score: 20, ranged: true },
-    ransom: { art: "ransom", hp: 170, speed: 1.45, dmg: 22, w: 1.1,  h: 1.25, range: 1.4, rate: 1.4, score: 35 },
-    boss:   { art: "boss",   hp: 950, speed: 1.7,  dmg: 26, w: 2.2,  h: 2.4,  range: 16,  rate: 1.1, score: 250, ranged: true, boss: true },
+    drift:    { art: "drift",    hp: 42,  speed: 3.0,  dmg: 9,  w: 0.8, h: 0.95, range: 1.1, rate: 0.9, score: 10 },
+    injector: { art: "injector", hp: 80,  speed: 2.0,  dmg: 13, w: 0.9, h: 1.15, range: 12,  rate: 1.8, score: 20, ranged: true },
+    loop:     { art: "loop",     hp: 170, speed: 1.45, dmg: 22, w: 1.1, h: 1.25, range: 1.4, rate: 1.4, score: 35 },
+    boss:     { art: "boss",     hp: 950, speed: 1.7,  dmg: 26, w: 2.2, h: 2.4,  range: 16,  rate: 1.1, score: 250, ranged: true, boss: true },
   };
-  const BOSS_NAMES = ["MELISSA", "STUXNET", "BLASTER", "CONFICKER", "SLAMMER"];
+  const BOSS_NAMES = ["JAILBREAK", "EXFIL", "POISON", "RECURSION", "OVERFLOW"];
 
   function hitscan(ox, oy, oz, yaw, slope, maxD, ignoreEnemies) {
     const dx = Math.cos(yaw), dy = Math.sin(yaw);
@@ -727,9 +756,9 @@
     const pts = e.def.score + Math.min(50, game.combo * 2);
     game.score += pts;
     player.reserve = Math.min(200, player.reserve + (e.def.boss ? 60 : 10));
-    game.popups.push({ x: e.x, y: e.y, z: e.z + e.h * 0.6, txt: `+${pts}`, life: 0.9, pal: P.cy2 });
+    game.popups.push({ x: e.x, y: e.y, z: e.z + e.h * 0.6, txt: `+${pts}`, life: 0.9, pal: P.ok2 });
     sfx(e.def.boss ? "boss" : "kill");
-    if (e.def.boss) game.banner = { txt: `${e.name} PURGED`, sub: "", life: 3 };
+    if (e.def.boss) game.banner = { txt: `${e.name} CONTIDO`, sub: "", life: 3 };
   }
 
   function hurt(amount) {
@@ -755,19 +784,19 @@
     const sx = player.x | 0, sy = player.y | 0;
     if (!inside(sx, sy)) return;
     const s0 = sy * MAP.w + sx;
-    if (height[s0] >= 2) return;
+    if (bodyH[s0] >= 2) return;
     flow[s0] = 0; fq[0] = s0;
     let head = 0, tail = 1;
     while (head < tail) {
       const cur = fq[head++];
       const cx = cur % MAP.w, cy = (cur / MAP.w) | 0;
-      const hc = height[cur], d = flow[cur];
+      const hc = bodyH[cur], d = flow[cur];
       for (let k = 0; k < 4; k++) {
         const nx = cx + N4[k][0], ny = cy + N4[k][1];
         if (nx < 1 || ny < 1 || nx >= MAP.w - 1 || ny >= MAP.h - 1) continue;
         const ni = ny * MAP.w + nx;
         if (flow[ni] !== -1) continue;
-        const hn = height[ni];
+        const hn = bodyH[ni];
         if (hn >= 2 || hc - hn > CFG.stepUp) continue;
         flow[ni] = d + 1; fq[tail++] = ni;
       }
@@ -777,18 +806,47 @@
   function flowStep(e) {
     const cx = e.x | 0, cy = e.y | 0;
     if (!inside(cx, cy)) return null;
-    let best = flow[cy * MAP.w + cx];
+    const here = cy * MAP.w + cx;
+    const hc = bodyH[here];
+    let best = flow[here];
     if (best < 0) best = Infinity;
     let bx = -1, by = -1;
     for (const [ox, oy] of N8) {
       const nx = cx + ox, ny = cy + oy;
       if (!inside(nx, ny)) continue;
-      const v = flow[ny * MAP.w + nx];
+      const ni = ny * MAP.w + nx;
+      const v = flow[ni];
       if (v < 0 || v >= best) continue;
+      // O vizinho ter fluxo menor NÃO garante que dá pra ir daqui até ele: o
+      // BFS pode ter chegado nele por outro lado. Sem esta checagem o bicho
+      // escolhe uma célula 0.76 acima e fica empurrando parede pra sempre.
+      if (bodyH[ni] - hc > CFG.stepUp) continue;
       if (ox && oy && (flow[cy * MAP.w + nx] < 0 || flow[ny * MAP.w + cx] < 0)) continue;
       best = v; bx = nx; by = ny;
     }
     return bx < 0 ? null : { x: bx + 0.5, y: by + 0.5 };
+  }
+
+  /** Preso: tenta os vizinhos em ordem de melhor fluxo, testando o movimento
+   *  de verdade. Desvio perpendicular fixo empurra o bicho pra fora da rota e
+   *  ele nunca volta. */
+  function unstick(e, sp) {
+    const cx = e.x | 0, cy = e.y | 0;
+    const opts = [];
+    for (const [ox, oy] of N8) {
+      const nx = cx + ox, ny = cy + oy;
+      if (!inside(nx, ny)) continue;
+      const v = flow[ny * MAP.w + nx];
+      if (v >= 0) opts.push({ v, x: nx + 0.5, y: ny + 0.5 });
+    }
+    opts.sort((a, b) => a.v - b.v);
+    for (const o of opts) {
+      const l = Math.hypot(o.x - e.x, o.y - e.y) || 1;
+      const ux = ((o.x - e.x) / l) * sp, uy = ((o.y - e.y) / l) * sp;
+      if (slideAxis(e, e.x + ux, e.y + uy)) return;
+      if (slideAxis(e, e.x + ux, e.y)) return;
+      if (slideAxis(e, e.x, e.y + uy)) return;
+    }
   }
 
   function spawn(kind) {
@@ -833,9 +891,7 @@
         const sp = e.def.speed * mv * dt;
         const okX = slideAxis(e, e.x + tx * sp, e.y);
         const okY = slideAxis(e, e.x, e.y + ty * sp);
-        if (!okX && !okY && !slideAxis(e, e.x - ty * sp, e.y + tx * sp)) {
-          slideAxis(e, e.x + ty * sp, e.y - tx * sp);
-        }
+        if (!okX && !okY) unstick(e, Math.abs(sp));
       }
       gravity(e, dt);
 
@@ -856,7 +912,7 @@
         } else hurt(e.def.dmg);
       }
 
-      if (e.boss && (e.tick = (e.tick ?? 7) - dt) <= 0) { e.tick = 8; spawn("worm"); spawn("worm"); }
+      if (e.boss && (e.tick = (e.tick ?? 7) - dt) <= 0) { e.tick = 8; spawn("drift"); spawn("drift"); }
     }
     game.enemies = game.enemies.filter((e) => !e.dead);
   }
@@ -878,9 +934,9 @@
     const q = [];
     const count = Math.min(28, 4 + n * 2);
     for (let i = 0; i < count; i++) {
-      let k = "worm";
-      if (n >= 2 && i % 3 === 1) k = "trojan";
-      if (n >= 4 && i % 5 === 4) k = "ransom";
+      let k = "drift";
+      if (n >= 2 && i % 3 === 1) k = "injector";
+      if (n >= 4 && i % 5 === 4) k = "loop";
       q.push(k);
     }
     const boss = n % 3 === 0;
@@ -889,10 +945,10 @@
     game.nextSpawn = 1;
     const name = BOSS_NAMES[((n / 3 - 1) | 0) % BOSS_NAMES.length];
     game.banner = {
-      txt: boss ? `WAVE ${String(n).padStart(2, "0")} // BOSS // ${name}`
-                : `WAVE ${String(n).padStart(2, "0")} // ${q.includes("ransom") ? "RANSOM ONLINE" : q.includes("trojan") ? "TROJAN ONLINE" : "WORMS INBOUND"}`,
-      sub: boss ? `${name}: rajada a distancia e reforco constante. Use a passarela.`
-                : "WORM: corpo a corpo. TROJAN: tiro a distancia. RANSOM: blindado.",
+      txt: boss ? `BREACH ${String(n).padStart(2, "0")} // ${name}`
+                : `BREACH ${String(n).padStart(2, "0")} // ${q.includes("loop") ? "LOOP DETECTADO" : q.includes("injector") ? "INJECTOR DETECTADO" : "DRIFT NO PERIMETRO"}`,
+      sub: boss ? `${name}: dispara a distancia e reinstancia reforco. Suba na passarela.`
+                : "DRIFT: corpo a corpo. INJECTOR: tiro a distancia. LOOP: blindado.",
       life: 3.4,
     };
     sfx("wave");
@@ -962,125 +1018,153 @@
   }
 
   // ------------------------------------------------------------------ arma
-  // AK-47 em vista de primeira pessoa, montada como retângulos em coordenadas
-  // de célula — arte linha a linha não acompanha a grade quando ela muda de
-  // tamanho. A assinatura da arma são três coisas: carregador banana curvo
-  // (feito de três blocos deslocados), tubo de gás acima do cano, e massa de
-  // mira na ponta. Sem isso vira "fuzil genérico".
-  //          [x0, x1, y0, y1, tom]   y negativo = pra cima
-  const STEEL = 0, WOOD = 1, EDGE = 2;
-  // ATENÇÃO à escala: a célula é 1.45x mais alta que larga, então altura em
-  // LINHAS precisa ser dividida por isso pra proporção sair certa. Desenhar
-  // como se a célula fosse quadrada deixa a arma com o dobro da altura.
-  // Proporção alvo: 96 células de comprimento por ~19 linhas (~3.5:1, que é a
-  // razão real de uma AK com carregador).
+  // AK-47 em view model. Definida em coordenadas da própria arma:
+  //   u = posição ao longo do eixo do cano, 0 (boca) a 100 (soleira)
+  //   v = deslocamento perpendicular, em LINHAS
+  // As medidas saem das proporções reais: receptor 10% do comprimento total,
+  // carregador descendo ~22%, conjunto inteiro ~29%. E como a célula é 1.45x
+  // mais alta que larga, toda altura já entra dividida por isso — foi o erro
+  // que fez as duas primeiras tentativas saírem com o dobro da altura.
+  const STEEL = 0, WOOD = 1, EDGE = 2, DARK = 3;
+  //        [u0,  u1,   v0,   v1,  material]
   const AK = [
-    [-64, -58, -19, -17, STEEL],   // freio de boca
-    [-59, -57, -22, -16, STEEL],   // massa de mira
-    [-57, -34, -18, -17, STEEL],   // cano
-    [-52, -34, -21, -20, STEEL],   // tubo de gás
-    [-53, -49, -22, -19, STEEL],   // bloco de gás
-    [-47, -33, -21, -16, WOOD],    // guarda-mão
-    [-46, -34, -16, -15, WOOD],
-    [-31, -3, -20, -13, STEEL],    // caixa da culatra
-    [-31, -5, -21, -20, EDGE],     // tampa superior
-    [-29, -25, -22, -21, STEEL],   // alça de mira
-    [-21, -13, -13, -9, STEEL],    // carregador banana: três blocos que
-    [-23, -15, -9, -6, STEEL],     //   avançam pra frente enquanto descem
-    [-26, -18, -6, -3, STEEL],
-    [-10, -3, -13, -8, WOOD],      // punho
-    [-9, -4, -8, -4, WOOD],
-    [-4, 7, -19, -15, STEEL],      // pescoço da coronha
-    [6, 24, -19, -14, WOOD],       // coronha
-    [22, 32, -21, -12, WOOD],      // soleira
+    [0, 6, -2.0, 2.0, STEEL],       // freio de boca
+    [5, 8, -5.0, -1.0, STEEL],      // massa de mira
+    [6, 30, -1.0, 0.6, STEEL],      // cano
+    [9, 13, -4.5, -1.0, STEEL],     // bloco de gás
+    [12, 34, -4.0, -2.6, STEEL],    // tubo de gás
+    [20, 38, -4.0, 2.0, WOOD],      // guarda-mão
+    [38, 62, -4.0, 2.0, STEEL],     // receptor
+    [38, 60, -5.4, -4.0, EDGE],     // tampa da culatra
+    [40, 44, -6.6, -5.4, STEEL],    // alça de mira
+    [44, 54, 2.0, 6.0, STEEL],      // carregador: três blocos que AVANÇAM
+    [42, 52, 6.0, 10.0, STEEL],     //   (u menor) enquanto descem — a curva
+    [40, 50, 10.0, 13.0, STEEL],    //   banana é a assinatura da AK
+    [59, 69, 2.0, 11.0, WOOD],      // punho
+    [62, 72, -3.5, 0.5, STEEL],     // pescoço da coronha
+    [70, 92, -4.0, 2.5, WOOD],      // coronha
+    [90, 100, -5.5, 4.0, WOOD],     // soleira
   ];
-  const AK_TONE = [P.s2, P.s3, P.s4];
+  const AK_TONE = [P.s2, P.s5, P.s3, P.s0];
 
   function renderGun() {
-    const kick = Math.round(player.kick * 2.5);
-    const sway = Math.round(Math.sin(player.bob * 9) * 1.6);
-    const ax = ((S.cols * 0.47) | 0) + sway;
-    const ay = S.rows - 1 + kick + (player.slideT > 0 ? 4 : 0);
+    const kick = player.kick * 2.4;
+    const sway = Math.sin(player.bob * 9) * 1.8;
+    const drop = player.slideT > 0 ? 6 : 0;
+    const len = S.cols * 0.36;               // comprimento na tela
+    const ux = len / 100;
+    const tilt = 0.2;                        // linhas por unidade de u
+    const ax = S.cols * 0.40 + sway;         // boca perto da mira
+    const ay = S.rows * 0.54 + kick + drop;
     const dim = player.reloadT > 0 ? 1 : 0;
-    const tilt = (x) => Math.round(x * 0.08);   // cano aponta pro centro da tela
+    // encurtamento: a ponta longe afina, a coronha perto engrossa
+    const fore = (u) => 0.8 + u * 0.004;
 
-    for (const [x0, x1, y0, y1, kind] of AK) {
-      const t = AK_TONE[kind];
-      for (let x = x0; x <= x1; x++) {
-        const shear = tilt(x);
-        for (let y = y0; y <= y1; y++) {
-          const c = ax + x, r = ay + y + shear;
-          if (c < 0 || r < 0 || c >= S.cols || r >= S.rows) continue;
-          const tone = y === y0 ? Math.min(P.s5, t + 2)              // topo pega luz
-                     : x === x0 || x === x1 ? Math.max(P.s0, t - 1)  // quina some
-                     : t - dim;
-          put(c, r, SOLID, Math.max(P.s0, tone), Z.gun);
+    for (const [u0, u1, v0, v1, kind] of AK) {
+      const base = AK_TONE[kind];
+      const steps = Math.max(2, Math.ceil((u1 - u0) * ux * 1.6));
+      for (let i = 0; i <= steps; i++) {
+        const u = u0 + ((u1 - u0) * i) / steps;
+        const f = fore(u);
+        const c = Math.round(ax + u * ux);
+        const cy = ay + u * tilt;
+        const r0 = Math.round(cy + v0 * f);
+        const r1 = Math.round(cy + v1 * f);
+        const tone = Math.max(P.s0, base - (u < 30 ? 1 : 0) - dim);
+        for (let r = r0; r <= r1; r++) {
+          const shade = r === r0 ? Math.min(P.s5, tone + 2)
+                      : r === r1 ? Math.max(P.s0, tone - 2)
+                      : tone;
+          put(c, r, SOLID, shade, Z.gun + u * 0.00001);
         }
       }
     }
 
-    // ventilação do guarda-mão: o detalhe que lê como AK de perto
-    for (let x = -45; x <= -35; x += 3) {
-      const r = ay + tilt(x) - 20;
-      put(ax + x, r, 61 /* = */, P.s5, Z.gunDetail);
-      put(ax + x, r + 1, 61, P.s4, Z.gunDetail);
+    const at = (u, v) => ({
+      c: Math.round(ax + u * ux),
+      r: Math.round(ay + u * tilt + v * fore(u)),
+    });
+    // ventilação do guarda-mão
+    for (let u = 22; u <= 36; u += 3) {
+      const q = at(u, -2.6);
+      put(q.c, q.r, 61 /* = */, P.s7, Z.gunDetail);
     }
-    // marca ciano na culatra: único ponto saturado do primeiro plano
-    for (let x = -28; x <= -10; x += 5) {
-      put(ax + x, ay + tilt(x) - 16, 46 /* . */, P.cy2, Z.gunDetail);
+    // marca esmeralda no receptor: o acento do jogo também está na sua arma
+    for (let u = 42; u <= 58; u += 5) {
+      const q = at(u, -1.0);
+      put(q.c, q.r, 46 /* . */, P.ok2, Z.gunDetail);
     }
-
     if (player.kick > 0.6) {
-      const mr = ay + tilt(-66) - 18;
-      text(ax - 67, mr - 1, "\\", P.ink, Z.muzzle);
-      text(ax - 68, mr, "-", P.ink, Z.muzzle);
-      text(ax - 67, mr + 1, "/", P.ink, Z.muzzle);
+      const q = at(-4, 0);
+      text(q.c - 1, q.r - 1, "\\", P.ink, Z.muzzle);
+      text(q.c - 2, q.r, "-", P.ink, Z.muzzle);
+      text(q.c - 1, q.r + 1, "/", P.ink, Z.muzzle);
     }
   }
 
   // ------------------------------------------------------------------- HUD
   const ZONES = [
-    { x0: 0, y0: 0, x1: 71, y1: 17, name: "NORTH TERRACE" },
-    { x0: 0, y0: 18, x1: 17, y1: 53, name: "WEST GANTRY" },
-    { x0: 54, y0: 18, x1: 71, y1: 53, name: "EAST GANTRY" },
-    { x0: 27, y0: 33, x1: 44, y1: 48, name: "CORE STACK" },
-    { x0: 0, y0: 54, x1: 71, y1: 71, name: "SOUTH DOCK" },
+    { x0: 0, y0: 0, x1: 71, y1: 7, name: "INGRESS EDGE" },
+    { x0: 0, y0: 8, x1: 32, y1: 18, name: "RACK BANK A" },
+    { x0: 39, y0: 8, x1: 71, y1: 18, name: "RACK BANK B" },
+    { x0: 0, y0: 19, x1: 71, y1: 21, name: "TRACE CATWALK" },
+    { x0: 0, y0: 22, x1: 32, y1: 36, name: "VECTOR INDEX" },
+    { x0: 39, y0: 22, x1: 71, y1: 36, name: "TOOL GATEWAY" },
+    { x0: 0, y0: 37, x1: 71, y1: 50, name: "CONTEXT WINDOW" },
+    { x0: 0, y0: 51, x1: 71, y1: 71, name: "EGRESS DOCK" },
   ];
   const zoneName = () => {
     const x = player.x | 0, y = player.y | 0;
     for (const z of ZONES) if (x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1) return z.name;
-    return "CENTRAL COURTYARD";
+    return "RUNTIME CORE";
   };
 
   const hud = {};
-  for (const id of ["Wave", "Hostiles", "Compass", "Zone", "Pts", "Integrity", "IntegrityBar",
-                    "Mag", "Reserve", "Reload", "Toast", "Slide", "Banner", "BannerSub"]) {
+  for (const id of ["Zone", "Compass", "Wave", "Score", "Hostiles", "Integrity", "IntegrityBar",
+                    "Ammo", "Reserve", "Rounds", "Status", "Banner", "BannerSub", "Toast"]) {
     hud[id] = document.getElementById("hud" + id);
   }
   const last = {};
   const setHud = (k, v) => { if (hud[k] && last[k] !== v) { last[k] = v; hud[k].textContent = v; } };
   const showHud = (k, on) => { if (hud[k] && last[k + "!"] !== on) { last[k + "!"] = on; hud[k].hidden = !on; } };
+
+  /** Barra segmentada: um <i> por segmento, reescrita só quando o número muda.
+   *  Munição tique a tique diz quanto resta sem você ler um número. */
+  function segments(key, on, total) {
+    const sig = `${on}/${total}`;
+    if (!hud[key] || last[key] === sig) return;
+    last[key] = sig;
+    hud[key].innerHTML = '<i class="on"></i>'.repeat(on) + "<i></i>".repeat(Math.max(0, total - on));
+  }
+
   const CARDINAL = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 
   function updateHud() {
     const deg = ((((player.yaw * 180) / Math.PI + 90) % 360) + 360) % 360;
-    setHud("Compass", `[ ${CARDINAL[Math.round(deg / 45) % 8]} ${String(Math.round(deg)).padStart(3, "0")}\u00B0 ]`);
+    setHud("Compass", `${CARDINAL[Math.round(deg / 45) % 8]} ${String(Math.round(deg)).padStart(3, "0")}\u00B0`);
     setHud("Zone", zoneName());
     setHud("Wave", String(game.wave).padStart(2, "0"));
+    setHud("Score", String(game.score).padStart(6, "0"));
+
     const alive = game.enemies.length + game.queue.length;
-    setHud("Hostiles", alive === 1 ? "1 HOSTILE REMAINING" : `${alive} HOSTILES REMAINING`);
-    setHud("Pts", String(game.score).padStart(6, "0"));
+    setHud("Hostiles", alive ? `${alive} ANOMALIA${alive > 1 ? "S" : ""} ATIVA${alive > 1 ? "S" : ""}` : "PERIMETRO LIMPO");
+    hud.Hostiles?.classList.toggle("clear", alive === 0);
 
     const hp = Math.round(player.hp);
     setHud("Integrity", String(hp));
-    const n = Math.max(0, Math.min(18, Math.round((hp / CFG.hpMax) * 18)));
-    setHud("IntegrityBar", "|".repeat(n) + ".".repeat(18 - n));
+    segments("IntegrityBar", Math.round((hp / CFG.hpMax) * 20), 20);
     hud.Integrity?.classList.toggle("low", hp < 35);
 
-    setHud("Mag", String(player.ammo).padStart(2, "0"));
+    setHud("Ammo", String(player.ammo).padStart(2, "0"));
     setHud("Reserve", String(player.reserve));
-    setHud("Reload", player.reloadT > 0 ? "RELOADING" : "[R] RELOAD");
-    showHud("Slide", game.mode === "play" && player.slideT <= 0 && player.grounded);
+    segments("Rounds", player.ammo, CFG.mag);
+    hud.Rounds?.classList.toggle("empty", player.ammo === 0);
+
+    const status = player.reloadT > 0 ? "RECARREGANDO"
+                 : player.ammo === 0 ? "[R] RECARREGAR"
+                 : player.slideT > 0 ? "DESLIZANDO"
+                 : player.grounded ? "[C] DESLIZE PRONTO" : "NO AR";
+    setHud("Status", status);
     showHud("Toast", game.mode === "play" && !document.pointerLockElement);
     showHud("Banner", !!game.banner);
     if (game.banner) { setHud("Banner", game.banner.txt); setHud("BannerSub", game.banner.sub || ""); }
@@ -1095,12 +1179,12 @@
     put(cx, cy - 1, 39, P.ink, Z.overlay);
     put(cx, cy + 1, 39, P.ink, Z.overlay);
     if (game.hitMark > 0) {
-      text(cx - 3, cy - 2, "\\", P.co1, Z.overlay); text(cx + 3, cy - 2, "/", P.co1, Z.overlay);
-      text(cx - 3, cy + 2, "/", P.co1, Z.overlay); text(cx + 3, cy + 2, "\\", P.co1, Z.overlay);
+      text(cx - 3, cy - 2, "\\", P.bad1, Z.overlay); text(cx + 3, cy - 2, "/", P.bad1, Z.overlay);
+      text(cx - 3, cy + 2, "/", P.bad1, Z.overlay); text(cx + 3, cy + 2, "\\", P.bad1, Z.overlay);
     }
     const since = game.t - player.lastHit;
     if (since < 0.45) {
-      const p = since < 0.2 ? P.co1 : P.co0;
+      const p = since < 0.2 ? P.hurt : P.bad0;
       for (let c = 0; c < S.cols; c += 2) { put(c, 0, 61, p, Z.overlay); put(c, S.rows - 1, 61, p, Z.overlay); }
       for (let r = 0; r < S.rows; r += 2) { put(0, r, 124, p, Z.overlay); put(S.cols - 1, r, 124, p, Z.overlay); }
     }
@@ -1162,11 +1246,6 @@
 
   // --------------------------------------------------------------- estados
   const el = (id) => document.getElementById(id);
-  const boxed = (lines) => {
-    const w = Math.max(...lines.map((l) => l.length)) + 8;
-    const pad = (l) => "|" + l.padStart((w + l.length) >> 1).padEnd(w) + "|";
-    return ["+" + "-".repeat(w) + "+", pad(""), ...lines.map(pad), pad(""), "+" + "-".repeat(w) + "+"].join("\n");
-  };
 
   function reset() {
     player.x = start.x; player.y = start.y;
@@ -1199,15 +1278,13 @@
   function resumeGame() { game.mode = "play"; show(null); grabMouse(); }
   function gameOver() {
     game.mode = "over"; mouse.down = false;
-    el("finalScore").textContent = `SCORE ${String(game.score).padStart(6, "0")}  ·  WAVE ${String(game.wave).padStart(2, "0")}`;
+    el("finalScore").textContent = `${String(game.score).padStart(6, "0")} PTS / BREACH ${String(game.wave).padStart(2, "0")}`;
     show("over");
     if (document.pointerLockElement) document.exitPointerLock();
   }
 
   // ------------------------------------------------------------------ init
   resize();
-  el("logo").textContent = boxed(["A S C I I   ::   S U B N E T", "first-person ascii // wave defense"]);
-  el("overLogo").textContent = boxed(["S Y S T E M   B R E A C H E D"]);
   el("start").addEventListener("click", start_);
   el("again").addEventListener("click", start_);
   el("resume").addEventListener("click", resumeGame);
@@ -1226,7 +1303,7 @@
   setSens(AIM.mult, false);
 
   if (location.search.includes("debug")) {
-    window.SUBNET = { CFG, P, PALETTE, game, player, MAP, height, spawn, startWave, TYPES, S };
+    window.SUBNET = { CFG, P, PALETTE, game, player, MAP, height, spawn, startWave, TYPES, S, flow, spawns, reachable, floorUnder };
   }
 
   player.z = floorUnder(player.x, player.y);
