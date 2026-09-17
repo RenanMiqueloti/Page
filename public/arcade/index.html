@@ -1,210 +1,195 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="robots" content="noindex" />
 <title>ASCII SUBNET</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" />
 <style>
-  :root {
-    --bg: #1b2029;
-    --fg: #2dd4bf;
-    --dim: #2a3340;
-    --warn: #ff6b52;
-  }
   * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: var(--bg); color: var(--fg);
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-    overflow: hidden;
-  }
-  #stage { position: relative; width: 100vw; height: 100vh; cursor: crosshair; }
-  #screen { display: block; width: 100%; height: 100%; background: var(--bg); }
 
-  /* varredura de CRT — puramente cosmético, sem custo de JS */
-  #stage::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background:
-      repeating-linear-gradient(to bottom, rgba(0,0,0,0.10) 0 1px, transparent 1px 3px),
-      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.42) 100%);
-    mix-blend-mode: multiply;
+  /* Um único mundo visual, deliberado: monitor de sala de operação às escuras.
+     Sem bloco de tema claro — a peça não segue o tema do leitor. */
+  :root {
+    --ground: #0d1216;
+    --void: #151c22;
+    --line: rgba(139, 152, 166, 0.2);
+    --ink: #e8edf3;
+    --dim: #8b98a6;
+    --accent: #2dd4bf;
+    --hostile: #ff6b52;
+    --ui: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
-
-  .panel {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 1.1rem;
-    background: rgba(5,7,6,0.88); backdrop-filter: blur(2px);
-    text-align: center; padding: 2rem; z-index: 5;
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--ui); overflow: hidden;
   }
-  .panel[hidden] { display: none; }
-  .panel pre { margin: 0; font-size: clamp(6px, 1.15vw, 13px); line-height: 1.05; color: var(--fg);
-               text-shadow: 0 0 12px rgba(52,211,153,0.45); }
-  .panel h2 { margin: 0; font-size: 1.1rem; letter-spacing: 0.35em; text-transform: uppercase; }
-  .panel p { margin: 0; max-width: 46rem; color: #a7f3d0; font-size: 0.82rem; line-height: 1.7; }
-  .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
-          gap: 0.35rem 1.6rem; font-size: 0.74rem; color: #6ee7b7; max-width: 42rem; }
-  .keys b { color: #ecfdf5; font-weight: 600; }
-  .cta { margin-top: 0.4rem; border: 1px solid var(--fg); background: transparent; color: var(--fg);
-         font: inherit; font-size: 0.82rem; letter-spacing: 0.22em; text-transform: uppercase;
-         padding: 0.7rem 2.2rem; cursor: pointer; transition: background 120ms, color 120ms; }
-  .cta:hover, .cta:focus-visible { background: var(--fg); color: #04120c; outline: none; }
-  .opt { display: flex; align-items: center; gap: 0.75rem; font-size: 0.72rem;
-         color: #6ee7b7; letter-spacing: 0.1em; text-transform: uppercase; }
-  .opt input[type="range"] { width: 11rem; accent-color: var(--fg); }
-  .opt output { min-width: 3.4rem; text-align: left; color: #ecfdf5;
-                font-variant-numeric: tabular-nums; }
-  .muted { color: #5b6573; font-size: 0.68rem; letter-spacing: 0.14em; }
-  .score { color: #ecfdf5; font-size: 0.95rem; letter-spacing: 0.2em; }
-  .warn { color: var(--warn); }
+  #stage { position: relative; width: 100%; height: 100%; cursor: crosshair; }
+  #screen { display: block; width: 100%; height: 100%; background: var(--ground); }
 
-  /* --- HUD fora da grade: tipografia de verdade, a grade fica com o mundo --- */
+  /* ---------------- HUD: DOM por cima do canvas ----------------
+     Fica fora da grade de propósito. Número grande em tipografia de verdade
+     lê melhor que qualquer coisa desenhada em caractere, e a grade sobra
+     inteira pro mundo. */
   #hud {
-    position: absolute; inset: 0; z-index: 3; pointer-events: none;
-    font-family: inherit; color: #e8edf3;
+    position: absolute; inset: 0; z-index: 3; pointer-events: none; color: var(--ink);
   }
   #hud [hidden] { display: none; }
-  .hud-tl, .hud-tc, .hud-tr, .hud-bl, .hud-br, .hud-slide, .hud-toast { position: absolute; }
-  .hud-tl { top: 1.1rem; left: 1.4rem; }
-  .hud-tr { top: 1.1rem; right: 1.4rem; text-align: right; }
-  .hud-tc { top: 1.1rem; left: 50%; transform: translateX(-50%); text-align: center; width: min(46rem, 92vw); }
-  .hud-bl { bottom: 1.2rem; left: 1.4rem; }
-  .hud-br { bottom: 1.2rem; right: 1.4rem; text-align: right; }
+  .tl, .tc, .tr, .bl, .br, .slide, .toast { position: absolute; }
+  .tl { top: 1.1rem; left: 1.5rem; }
+  .tr { top: 1.1rem; right: 1.5rem; text-align: right; }
+  .tc { top: 1.1rem; left: 50%; transform: translateX(-50%); width: min(46rem, 92vw); text-align: center; }
+  .bl { bottom: 1.3rem; left: 1.5rem; }
+  .br { bottom: 1.3rem; right: 1.5rem; text-align: right; }
 
-  .hud-label {
-    font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
-    color: #8d97a4; margin-bottom: 0.15rem;
-  }
-  .hud-big {
-    font-size: 2.1rem; font-weight: 600; line-height: 1;
-    letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
-  }
-  #hudIntegrity.low { color: #ff6b52; }
-  .hud-hostiles {
-    margin-top: 0.3rem; font-size: 0.6rem; letter-spacing: 0.2em;
-    text-transform: uppercase; color: #ff6b52;
-  }
-  .hud-compass { font-size: 0.78rem; letter-spacing: 0.34em; color: #e8edf3; }
-  .hud-zone { margin-top: 0.15rem; font-size: 0.56rem; letter-spacing: 0.34em; color: #8d97a4; }
-  .hud-banner {
-    margin-top: 1.7rem; font-size: 0.74rem; font-weight: 600;
-    letter-spacing: 0.22em; text-transform: uppercase; text-wrap: balance;
-  }
-  .hud-banner-sub { margin-top: 0.3rem; font-size: 0.6rem; letter-spacing: 0.1em; color: #8d97a4; }
+  .label { font-size: 0.56rem; letter-spacing: 0.32em; text-transform: uppercase; color: var(--dim); }
+  .big { font-size: 2.2rem; font-weight: 600; line-height: 1.05; letter-spacing: 0.05em;
+         font-variant-numeric: tabular-nums; }
+  #hudIntegrity.low { color: var(--hostile); }
+  .hostiles { margin-top: 0.3rem; font-size: 0.58rem; letter-spacing: 0.2em;
+              text-transform: uppercase; color: var(--hostile); }
+  .compass { font-size: 0.78rem; letter-spacing: 0.34em; }
+  .zone { margin-top: 0.2rem; font-size: 0.54rem; letter-spacing: 0.34em; color: var(--dim); }
+  .banner { margin-top: 1.8rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.22em;
+            text-transform: uppercase; text-wrap: balance; }
+  .banner-sub { margin-top: 0.3rem; font-size: 0.58rem; letter-spacing: 0.08em; color: var(--dim); }
 
-  .hud-card {
-    background: rgba(30, 36, 46, 0.7);
-    border: 1px solid rgba(141, 151, 164, 0.22);
-    padding: 0.65rem 1.1rem 0.7rem;
-    min-width: 8.5rem;
-  }
-  .hud-bar {
-    margin-top: 0.35rem; font-size: 0.6rem; letter-spacing: 0.04em; color: #2dd4bf;
-    white-space: nowrap; overflow: hidden;
-  }
-  .hud-ammo { display: flex; align-items: baseline; justify-content: flex-end; gap: 0.4rem; }
-  .hud-slash, .hud-reserve { color: #8d97a4; font-size: 0.8rem; }
-  .hud-reload { margin-top: 0.35rem; margin-bottom: 0; }
+  .card { background: rgba(21, 28, 34, 0.82); border: 1px solid var(--line);
+          padding: 0.6rem 1.1rem 0.7rem; min-width: 9rem; }
+  .bar { margin-top: 0.35rem; font-size: 0.58rem; color: var(--accent); white-space: nowrap; }
+  .ammo { display: flex; align-items: baseline; justify-content: flex-end; gap: 0.4rem; }
+  .ammo .slash, .ammo .reserve { color: var(--dim); font-size: 0.78rem; }
+  .reload { margin-top: 0.35rem; }
+  .slide { bottom: 1.7rem; left: 50%; transform: translateX(-50%);
+           font-size: 0.58rem; letter-spacing: 0.28em; color: var(--dim); }
+  .toast { top: 50%; left: 50%; transform: translate(-50%, 6rem);
+           background: rgba(21, 28, 34, 0.9); border: 1px solid var(--line);
+           padding: 0.5rem 1.1rem; font-size: 0.6rem; letter-spacing: 0.2em;
+           text-transform: uppercase; color: var(--dim); white-space: nowrap; }
 
-  .hud-slide {
-    bottom: 1.6rem; left: 50%; transform: translateX(-50%);
-    font-size: 0.6rem; letter-spacing: 0.28em; color: #8d97a4;
+  /* ---------------- painéis ---------------- */
+  .panel {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1.15rem; padding: 2rem 1rem; text-align: center; overflow-y: auto;
+    background: rgba(13, 18, 22, 0.94);
   }
-  .hud-toast {
-    top: 50%; left: 50%; transform: translate(-50%, 5.5rem);
-    background: rgba(30, 36, 46, 0.86); border: 1px solid rgba(141, 151, 164, 0.22);
-    padding: 0.5rem 1.1rem; font-size: 0.62rem; letter-spacing: 0.2em;
-    text-transform: uppercase; color: #b3bcc7; white-space: nowrap;
+  .panel[hidden] { display: none; }
+  .panel pre { margin: 0; font-family: var(--ui); font-size: clamp(5px, 1.05vw, 12px);
+               line-height: 1.1; color: var(--accent); }
+  .panel h2 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.34em; text-transform: uppercase; }
+  .panel p { margin: 0; max-width: 46ch; color: #b3bcc7; font-size: 0.8rem; line-height: 1.75;
+             text-wrap: balance; }
+  .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+          gap: 0.4rem 1.5rem; max-width: 40rem; width: 100%; font-size: 0.7rem; color: var(--dim); }
+  .keys span { display: flex; justify-content: space-between; gap: 0.6rem;
+               border-bottom: 1px solid var(--line); padding-bottom: 0.2rem; }
+  .keys b { color: var(--ink); font-weight: 600; }
+  .opt { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.75rem;
+         font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .opt input[type="range"] { width: min(11rem, 60vw); accent-color: var(--accent); }
+  .opt output { min-width: 3.4rem; text-align: left; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .cta { border: 1px solid var(--accent); background: transparent; color: var(--accent);
+         font: inherit; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.24em;
+         text-transform: uppercase; padding: 0.75rem 2.4rem; cursor: pointer;
+         transition: background 120ms ease, color 120ms ease; }
+  .cta:hover, .cta:focus-visible { background: var(--accent); color: var(--ground); outline: none; }
+  .cta:focus-visible { box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.3); }
+  .muted { font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: #566270; }
+  .score { font-size: 0.95rem; letter-spacing: 0.2em; font-variant-numeric: tabular-nums; }
+  .touch-only { display: none; color: var(--hostile); font-size: 0.76rem; letter-spacing: 0.1em; }
+
+  @media (pointer: coarse), (max-width: 640px) {
+    .touch-only { display: block; }
+    .keys, .opt, #menu .muted { display: none; }
   }
-  @media (max-width: 720px) {
-    .hud-big { font-size: 1.4rem; }
-    .hud-toast { white-space: normal; max-width: 80vw; text-align: center; }
-  }
+  @media (max-width: 720px) { .big { font-size: 1.4rem; }
+    .toast { white-space: normal; max-width: 80vw; text-align: center; } }
+  @media (prefers-reduced-motion: reduce) { .cta { transition: none; } }
 </style>
 </head>
 <body>
-  <div id="stage">
-    <canvas id="screen"></canvas>
+<div id="stage">
+  <canvas id="screen"></canvas>
 
   <div id="hud" aria-hidden="true">
-    <div class="hud-tl">
-      <div class="hud-label">Wave</div>
-      <div class="hud-big" id="hudWave">01</div>
-      <div class="hud-hostiles" id="hudHostiles">0 HOSTILES REMAINING</div>
+    <div class="tl">
+      <div class="label">Wave</div>
+      <div class="big" id="hudWave">01</div>
+      <div class="hostiles" id="hudHostiles">0 HOSTILES REMAINING</div>
     </div>
-
-    <div class="hud-tc">
-      <div class="hud-compass" id="hudCompass">[ N 000&#176; ]</div>
-      <div class="hud-zone" id="hudZone">CENTRAL COURTYARD</div>
-      <div class="hud-banner" id="hudBanner" hidden></div>
-      <div class="hud-banner-sub" id="hudBannerSub"></div>
+    <div class="tc">
+      <div class="compass" id="hudCompass">[ N 000&#176; ]</div>
+      <div class="zone" id="hudZone">CENTRAL COURTYARD</div>
+      <div class="banner" id="hudBanner" hidden></div>
+      <div class="banner-sub" id="hudBannerSub"></div>
     </div>
-
-    <div class="hud-tr">
-      <div class="hud-label">Pts</div>
-      <div class="hud-big" id="hudPts">000000</div>
+    <div class="tr">
+      <div class="label">Pts</div>
+      <div class="big" id="hudPts">000000</div>
     </div>
-
-    <div class="hud-card hud-bl">
-      <div class="hud-label">Integrity</div>
-      <div class="hud-big" id="hudIntegrity">100</div>
-      <div class="hud-bar" id="hudIntegrityBar">||||||||||||||||||</div>
+    <div class="card bl">
+      <div class="label">Integrity</div>
+      <div class="big" id="hudIntegrity">100</div>
+      <div class="bar" id="hudIntegrityBar">||||||||||||||||||</div>
     </div>
-
-    <div class="hud-card hud-br">
-      <div class="hud-label">01 / Rifle</div>
-      <div class="hud-ammo"><span class="hud-big" id="hudMag">30</span><span class="hud-slash">/</span><span class="hud-reserve" id="hudReserve">150</span></div>
-      <div class="hud-label hud-reload" id="hudReload">[R] RELOAD</div>
+    <div class="card br">
+      <div class="label">01 / Rifle</div>
+      <div class="ammo"><span class="big" id="hudMag">30</span><span class="slash">/</span><span class="reserve" id="hudReserve">150</span></div>
+      <div class="label reload" id="hudReload">[R] RELOAD</div>
     </div>
-
-    <div class="hud-slide" id="hudSlide" hidden>[C] SLIDE READY</div>
-    <div class="hud-toast" id="hudToast" hidden>CLICK TO CAPTURE THE MOUSE &#183; ESC TO RELEASE</div>
+    <div class="slide" id="hudSlide" hidden>[C] SLIDE READY</div>
+    <div class="toast" id="hudToast" hidden>CLICK TO CAPTURE THE MOUSE &#183; ESC TO RELEASE</div>
   </div>
 
-
-    <div class="panel" id="menu">
-      <pre id="logo"></pre>
-      <p>Primeira pessoa em ASCII. Ondas de malware invadem o datacenter — segura o
-         perímetro, usa as escadas pra ganhar altura e mira na cabeça.</p>
-      <div class="keys">
-        <span><b>WASD</b> mover</span>
-        <span><b>Mouse</b> olhar</span>
-        <span><b>Click</b> atirar</span>
-        <span><b>Shift</b> correr</span>
-        <span><b>Space</b> pular</span>
-        <span><b>Ctrl / C</b> deslizar</span>
-        <span><b>Setas</b> mirar</span>
-        <span><b>R</b> recarregar</span>
-        <span><b>P / Esc</b> pausar</span>
-        <span><b>M</b> mudo</span>
-        <span><b>[ ]</b> sensibilidade</span>
-      </div>
-    <label class="opt" for="sensMenu">
-      <span>Sensibilidade</span>
-      <input class="sens" id="sensMenu" type="range" min="0.3" max="2.5" step="0.05" value="1" />
-      <output class="sensOut" for="sensMenu">1.00x</output>
-    </label>
-      <button class="cta" id="start">Iniciar</button>
-      <span class="muted">desktop · mouse + teclado · sem login</span>
+  <div class="panel" id="menu">
+    <pre id="logo"></pre>
+    <p>FPS em primeira pessoa desenhado em caracteres. Ondas de malware invadem o
+       datacenter &mdash; segura o per&iacute;metro, usa as passarelas pra ganhar altura,
+       mira na cabe&ccedil;a.</p>
+    <div class="keys">
+      <span><b>WASD</b> mover</span>
+      <span><b>Mouse</b> olhar</span>
+      <span><b>Click</b> atirar</span>
+      <span><b>Shift</b> correr</span>
+      <span><b>Space</b> pular</span>
+      <span><b>Ctrl / C</b> deslizar</span>
+      <span><b>Setas</b> mirar</span>
+      <span><b>R</b> recarregar</span>
+      <span><b>P / Esc</b> pausar</span>
+      <span><b>M</b> mudo</span>
+      <span><b>[ ]</b> sensib.</span>
     </div>
-
-    <div class="panel" id="pause" hidden>
-      <h2>Pausado</h2>
-      <p>Clique na tela pra recapturar o mouse e continuar.</p>
-    <label class="opt" for="sensPause">
-      <span>Sensibilidade</span>
-      <input class="sens" id="sensPause" type="range" min="0.3" max="2.5" step="0.05" value="1" />
-      <output class="sensOut" for="sensPause">1.00x</output>
-    </label>
-      <button class="cta" id="resume">Continuar</button>
-    </div>
-
-    <div class="panel" id="over" hidden>
-      <pre id="overLogo"></pre>
-      <div class="score" id="finalScore"></div>
-      <button class="cta" id="again">Rodar de novo</button>
-    </div>
+      <label class="opt" for="sensMenu">
+        <span>Sensibilidade</span>
+        <input class="sens" id="sensMenu" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+        <output class="sensOut" for="sensMenu">1.00x</output>
+      </label>
+    <button class="cta" id="start">Iniciar</button>
+    <span class="muted">se o mouse n&atilde;o capturar, arraste ou use as setas</span>
+    <span class="touch-only">Precisa de teclado e mouse &mdash; abra num desktop.</span>
   </div>
-  <script src="./game.js"></script>
+
+  <div class="panel" id="pause" hidden>
+    <h2>Pausado</h2>
+    <p>Clique na tela pra recapturar o mouse e continuar.</p>
+      <label class="opt" for="sensPause">
+        <span>Sensibilidade</span>
+        <input class="sens" id="sensPause" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+        <output class="sensOut" for="sensPause">1.00x</output>
+      </label>
+    <button class="cta" id="resume">Continuar</button>
+  </div>
+
+  <div class="panel" id="over" hidden>
+    <pre id="overLogo"></pre>
+    <div class="score" id="finalScore"></div>
+    <button class="cta" id="again">Rodar de novo</button>
+  </div>
+</div>
+<script src="./engine.js"></script>
 </body>
 </html>

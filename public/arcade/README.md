@@ -1,72 +1,86 @@
 # ASCII SUBNET
 
-FPS em primeira pessoa renderizado inteiramente em caracteres, em `<canvas>` 2D.
-Zero dependência, zero build: dois arquivos estáticos servidos pelo `public/`.
+FPS em primeira pessoa desenhado numa grade de caracteres, em `<canvas>` 2D.
+Dois arquivos estáticos, zero dependência, zero build.
 
-Jogar local: `npm run dev` e abrir `/arcade/index.html`.
-Debug: `/arcade/index.html?debug=1` expõe `window.SUBNET` no console
-(`SUBNET.spawnEnemy("boss")`, `SUBNET.startWave(9)`, `SUBNET.player`).
+Rodar: `npm run dev` e abrir `/arcade/index.html`.
+Debug: `?debug=1` expõe `window.SUBNET` (`SUBNET.spawn("boss")`,
+`SUBNET.startWave(9)`, `SUBNET.player`).
 
-## Como o renderer funciona
+## Como o visual foi decidido
 
-Não é 3D nem raytracing — é um **raycaster de heightmap**, o meio-termo entre
-Wolfenstein e Doom:
+Esta é a segunda versão. A primeira preenchia cada célula com caractere de
+sombreamento por distância e ficava achatada e leitosa. A reescrita saiu da
+observação de um frame real de um FPS ASCII que funciona, e três medidas
+guiaram tudo:
 
-- o mapa é uma grade onde cada célula guarda **uma altura** (`MAP_SRC`);
-- pra cada coluna da tela, um DDA caminha pelas células de perto pra longe;
-- cada célula pinta o **topo** dela (chão/plataforma) e, quando sobe em relação
-  à anterior, a **face vertical**;
-- uma "janela" de linhas ainda não pintadas fecha de baixo pra cima — quando
-  fecha, a coluna acabou e o resto é céu.
+**Grade fina.** ~240 colunas, célula de ~6px. Com célula grande o preenchimento
+lê como textura de texto; com célula pequena, lê como cor sólida.
 
-Isso dá escada, passarela e plataforma de graça, sem z-buffer por pixel nem
-polígono. O custo é não existir teto nem ponte: uma célula só tem uma altura.
+**Sombreamento chapado.** Cada face recebe UMA cor, escolhida pela orientação e
+pela altura — não um gradiente por distância. O relevo vem do contraste entre
+faces vizinhas. A névoa só escurece em degraus grossos (`fade()`), porque
+gradiente fino em caractere vira ruído.
 
-Os inimigos são *billboards* de arte em char, com teste de profundidade por
-célula da grade (`depth`), então eles somem corretamente atrás de quina e
-plataforma. O disparo é hitscan que marcha pelo mesmo heightmap — é por isso que
-cobertura funciona: a bala bate na parede antes de chegar no bicho.
+**Luminância calibrada, não estimada.** A referência tem média 28/255, 90% dos
+pixels abaixo de 46, e menos de 2% acima de 80. A paleta daqui foi ajustada até
+cair na mesma distribuição (média 32, p90 43, 1,5% acima de 80). Cinza claro
+demais é o erro mais fácil de cometer: a cena inteira embranquece.
 
-A saída vira `fillText` por *run* de mesma cor (espaço não custa nada), o que
-mantém ~8 mil células a 60fps.
+Duas consequências de implementação:
 
-## Por que a cena é desenhada assim
+- **Preenchimento é retângulo, não glifo.** A célula sólida usa um código
+  sentinela e vira `fillRect` no flush — sem costura entre linhas, e mais rápido
+  que `fillText`. Caractere fica para o que é detalhe: linha de painel, quina,
+  malha do piso, plaqueta de hostil.
+- **HUD em DOM.** Número grande com tipografia de verdade lê melhor que qualquer
+  coisa desenhada em célula, e a grade sobra inteira para o mundo. Na grade só
+  fica o que pertence ao espaço 3D: mira, marcador de acerto, borda de dano.
 
-A primeira versão preenchia cada célula com um caractere de sombreamento e a
-cena ficava achatada: parede plana está toda à mesma distância, então virava um
-retângulo de um caractere só. Três decisões consertaram isso — todas copiadas do
-que dá pra observar em jogos ASCII que funcionam:
+## Como o mundo é renderizado
 
-1. **Contorno, não preenchimento.** O corpo das superfícies é discreto; o que
-   desenha a forma é a aresta de cada célula, a ranhura horizontal por altura de
-   mundo e o lábio no topo. Como essas linhas vivem em coordenadas de mundo, a
-   perspectiva converge sozinha.
-2. **O primeiro plano fica vazio.** O chão raso desenha só os nós da malha, com
-   espessura que escala com a distância. Tela cheia de caractere lê como ruído;
-   arquitetura recortada contra o vazio lê como volume.
-3. **Paleta semântica.** A cor diz o que a coisa é, não quão longe está: cinza é
-   estrutura, ciano é superfície que dá pra pisar, coral é hostil, branco é foco.
+Raycaster de heightmap: cada célula do mapa guarda uma altura. Para cada coluna
+da tela, um DDA caminha de perto para longe mantendo uma janela de linhas ainda
+não pintadas; cada célula pinta seu topo e, se subiu, a face vertical. Isso dá
+escada, passarela e plataforma sem z-buffer por pixel. O custo é não existir
+teto nem ponte — uma célula tem uma altura só.
 
-O HUD fica em DOM por cima do canvas, não dentro da grade — tipografia de
-verdade, e a grade fica só com o que pertence ao mundo (mira, plaqueta de
-hostil, borda de dano).
+Hostis são billboards com teste de profundidade por célula, então somem
+corretamente atrás de quina. O tiro é hitscan marchando o mesmo heightmap: é por
+isso que cobertura vale igual para a bala e para a linha de visão da IA.
+
+## Nível e navegação
+
+O mapa é construído por operações (`rect`, `ring`, `stairs`), não por arte ASCII
+— pátio grande com arquitetura afastada é o que cria linha de horizonte.
+
+Dois invariantes que o código garante sozinho:
+
+- `reachable()` faz flood fill com as MESMAS regras de passo do jogo, e
+  `placeSpawns()` só aceita spawn em célula comprovadamente conectada ao início.
+  Sem isso, editar o nível gera região ilhada e a onda nunca termina — foi
+  exatamente o bug que apareceu no primeiro teste desta versão.
+- Toda plataforma alta precisa de escada dos dois lados: 1.52 de uma vez é
+  intransponível com `stepUp` de 0.42, e um desnível desses vira parede.
+
+A IA usa campo de fluxo BFS a partir da célula do player, recalculado 4x/s: cada
+hostil só desce o gradiente, o que basta pra contornar torre e subir escada.
 
 ## Onde mexer
 
-| Quero | Arquivo / símbolo |
+| Quero | Símbolo |
 |---|---|
-| Mudar o mapa | `MAP_SRC` — `#` parede, `1`-`4` plataforma, `.` chão, `P` spawn do player, `e` spawn de inimigo |
-| Tunar movimento / dano / cadência | `CFG` |
-| Novo tipo de inimigo | `TYPES` + arte em `ART` |
-| Mudar a arte de um inimigo | `ART` (espaço = transparente) |
+| Movimento, dano, cadência | `CFG` |
+| Layout do nível | `buildLevel()` |
+| Paleta | `PALETTE` + o mapa de papéis em `P` |
+| Novo tipo de hostil | `TYPES` + arte em `ART` |
 | Composição das ondas | `startWave()` |
-| Paleta / estética | `PALETTE`, `RAMP` |
-| HUD | markup `#hud` no HTML + `updateHud()` |
-| Nome das zonas | `ZONES` |
-| Efeitos sonoros | `sfx()` — síntese via WebAudio, sem asset |
+| Nome das zonas do HUD | `ZONES` |
+| Silhueta da arma | `GUN` (retângulos, não arte linha a linha) |
+| Efeitos sonoros | `sfx()` — WebAudio, sem asset |
 
 ## Pendências conhecidas
 
-- Sem suporte a touch: precisa de mouse + teclado.
-- IA usa campo de fluxo BFS recalculado 4x/s; inimigo não prevê movimento.
-- Sem persistência de recorde (dá pra plugar `localStorage` em `gameOver()`).
+- Sem suporte a touch: precisa de mouse e teclado.
+- Sem recorde persistente (dá pra plugar `localStorage` em `gameOver()`).
+- A arma é uma silhueta de caixas; a referência usa uma peça bem mais detalhada.
