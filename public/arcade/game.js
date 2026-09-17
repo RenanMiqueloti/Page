@@ -170,6 +170,7 @@
     ctx.textBaseline = "top";
   }
   window.addEventListener("resize", resize);
+  document.fonts?.ready?.then(resize).catch(() => {});
 
   const clearScreen = () => {
     chars.fill(32);
@@ -484,6 +485,11 @@
       player.bob += speed * dt * (player.slideT > 0 ? 0.4 : 1);
     }
 
+    // setas sempre miram: é o único caminho que não depende do pointer lock
+    const lookX = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0);
+    const lookY = (keys.ArrowDown ? 1 : 0) - (keys.ArrowUp ? 1 : 0);
+    if (lookX || lookY) look(lookX * dt * 620, lookY * dt * 380);
+
     if (keys.Space && player.grounded && player.slideT <= 0) {
       player.vz = CFG.jumpV; player.grounded = false; sfx("jump");
     }
@@ -526,7 +532,7 @@
 
   window.addEventListener("keydown", (e) => {
     keys[e.code] = true;
-    if (["Space", "ArrowUp", "ArrowDown", "Tab"].includes(e.code)) e.preventDefault();
+    if (e.code.startsWith("Arrow") || e.code === "Space" || e.code === "Tab") e.preventDefault();
     if (e.code === "KeyP" && game.mode === "play") pause();
     if (e.code === "KeyM") { game.muted = !game.muted; }
   });
@@ -536,12 +542,18 @@
   canvas.addEventListener("mousedown", (e) => { if (e.button === 0) mouse.down = true; });
   window.addEventListener("mouseup", (e) => { if (e.button === 0) mouse.down = false; });
 
-  document.addEventListener("mousemove", (e) => {
-    if (document.pointerLockElement !== canvas) return;
-    player.yaw += e.movementX * CFG.sens;
-    player.pitch -= e.movementY * CFG.sens * 220;
+  function look(dx, dy) {
+    player.yaw += dx * CFG.sens;
+    player.pitch -= dy * CFG.sens * 220;
     const lim = S.rows * 0.85;
     player.pitch = Math.max(-lim, Math.min(lim, player.pitch));
+  }
+
+  document.addEventListener("mousemove", (e) => {
+    const locked = document.pointerLockElement === canvas;
+    // sem captura (iframe, permissão negada) ainda dá pra mirar arrastando
+    if (!locked && !(mouse.down && game.mode === "play")) return;
+    look(e.movementX || 0, e.movementY || 0);
   });
 
   document.addEventListener("pointerlockchange", () => {
@@ -996,6 +1008,12 @@
       ? `RELOADING ${bar(CFG.reload - player.reloadT, CFG.reload, 8)}   WAVE ${game.wave}   SCORE ${game.score}`
       : `AMMO ${String(player.ammo).padStart(2)}/${player.reserve}   WAVE ${game.wave}   SCORE ${game.score}`;
     text(S.cols - right.length - 2, S.rows - 2, right, reloading ? 11 : 4);
+
+    if (!document.pointerLockElement) {
+      const hint = "CLIQUE PRA CAPTURAR O MOUSE  //  SETAS OU ARRASTAR TAMBEM MIRAM";
+      clearSpan(cx - (hint.length >> 1) - 1, S.rows - 4, hint.length + 2);
+      text(cx - (hint.length >> 1), S.rows - 4, hint, 2);
+    }
 
     const alive = game.enemies.length + game.spawnQueue.length;
     clearSpan(0, 1, 16);
