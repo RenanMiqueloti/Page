@@ -97,6 +97,16 @@ devem cair na tela e converto de volta pra espaço de câmera. Tentar adivinhar 
 vetor da arma direto põe ela no meio da tela — foi o que aconteceu na primeira
 tentativa.
 
+A boca cai junto da mira e o cano converge pro centro, que é de onde o tiro
+sai — arma apontando pra um canto qualquer denuncia que é adesivo. Mas o eixo
+não pode ficar paralelo demais à visão, senão sobra só a coronha gigante e o
+cano some.
+
+Dois detalhes valem mais que geometria fina para o reconhecimento: **madeira
+clara contra metal escuro** (rampa de tom por material, não deslocamento numa
+rampa só) e um **carregador que precisa LER** — em tom escuro ele some no fundo
+escuro, e é justamente a peça que identifica a arma.
+
 ## Onde mexer
 
 | Quero | Símbolo |

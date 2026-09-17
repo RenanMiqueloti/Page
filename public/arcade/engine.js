@@ -61,6 +61,7 @@
     ok0: 8, ok1: 9, ok2: 10,                     // esmeralda: rota, seu
     bad0: 11, bad1: 12,                          // âmbar: anomalia
     boss: 13, ink: 14, hurt: 15, g0: 16, g1: 17,
+    w0: 18, w1: 19, w2: 20, w3: 21,
   };
   const PALETTE = [
     "#0b0910", // 0 céu
@@ -81,6 +82,10 @@
     "#ff4d6d", // 15 dano no player
     "#7d7289", // 16 arma: face iluminada
     "#9d92aa", // 17 arma: face de topo
+    "#4a3a2c", // 18 madeira na sombra
+    "#6b5540", // 19 madeira
+    "#8a6f52", // 20 madeira iluminada
+    "#a98a68", // 21 madeira no topo
   ];
 
   const SOLID = 1;         // código sentinela: célula preenchida (fillRect)
@@ -1029,25 +1034,38 @@
   // Espaço do modelo: x corre do cano (0) à soleira (0.62), y é pra cima,
   // z é a largura. Medidas vêm das proporções reais da arma.
   const STEEL = 0, WOOD = 1, DARKMETAL = 2;
+  // Rampa por MATERIAL, não deslocamento numa rampa só: madeira e metal
+  // reagem à luz de forma diferente, e é esse contraste — madeira clara contra
+  // metal escuro — que faz alguém reconhecer uma AK antes de contar as peças.
+  const AK_RAMP = [
+    [P.s1, P.s3, P.s4, P.g0],    // STEEL
+    [P.w0, P.w1, P.w2, P.w3],    // WOOD
+    [P.s2, P.s3, P.s5, P.g0],    // DARKMETAL (carregador precisa LER:
+                                 //  escuro demais some no fundo escuro)
+  ];
+  const AK_SCALE = 1.25;
   const AK3 = [
     //  x0     x1     y0      y1      z0      z1     material
-    [0.000, 0.035, -0.013, 0.013, -0.013, 0.013, DARKMETAL], // freio de boca
-    [0.030, 0.050,  0.010, 0.046, -0.008, 0.008, STEEL],     // massa de mira
-    [0.030, 0.245, -0.010, 0.024, -0.010, 0.010, STEEL],     // cano (encosta no tubo)
-    [0.055, 0.088,  0.006, 0.042, -0.013, 0.013, STEEL],     // bloco de gás
-    [0.072, 0.245,  0.022, 0.039, -0.011, 0.011, STEEL],     // tubo de gás
-    [0.130, 0.262, -0.019, 0.039, -0.021, 0.021, WOOD],      // guarda-mão
-    [0.262, 0.442, -0.031, 0.035, -0.023, 0.023, STEEL],     // receptor
-    [0.262, 0.432,  0.035, 0.047, -0.021, 0.021, DARKMETAL], // tampa da culatra
-    [0.282, 0.302,  0.047, 0.061, -0.008, 0.008, STEEL],     // alça de mira
-    [0.300, 0.362, -0.086, -0.031, -0.014, 0.014, DARKMETAL],// carregador (topo)
-    [0.284, 0.346, -0.137, -0.086, -0.014, 0.014, DARKMETAL],// carregador (curva)
-    [0.440, 0.502, -0.116, -0.031, -0.019, 0.019, WOOD],     // punho
-    [0.440, 0.508, -0.011, 0.031, -0.019, 0.019, STEEL],     // pescoço
-    [0.500, 0.600, -0.031, 0.037, -0.023, 0.023, WOOD],      // coronha
-    [0.596, 0.620, -0.046, 0.046, -0.025, 0.025, DARKMETAL], // soleira
+    [0.000, 0.030, -0.016, 0.016, -0.016, 0.016, DARKMETAL], // freio de boca
+    [0.026, 0.044, -0.011, 0.011, -0.011, 0.011, STEEL],     // ponta do cano
+    [0.030, 0.052,  0.014, 0.058, -0.011, 0.011, STEEL],     // massa de mira
+    [0.033, 0.049,  0.046, 0.054, -0.014, 0.014, STEEL],     // capa da mira
+    [0.044, 0.250, -0.013, 0.009, -0.013, 0.013, STEEL],     // cano
+    [0.060, 0.096,  0.006, 0.046, -0.014, 0.014, STEEL],     // bloco de gás
+    [0.078, 0.252,  0.026, 0.045, -0.014, 0.014, STEEL],     // tubo de gás
+    [0.096, 0.140, -0.014, 0.000, -0.008, 0.008, DARKMETAL], // haste de limpeza
+    [0.140, 0.268, -0.021, 0.043, -0.023, 0.023, WOOD],      // guarda-mão
+    [0.268, 0.452, -0.033, 0.036, -0.025, 0.025, STEEL],     // receptor
+    [0.268, 0.440,  0.036, 0.049, -0.023, 0.023, DARKMETAL], // tampa da culatra
+    [0.286, 0.312,  0.049, 0.064, -0.009, 0.009, STEEL],     // alça de mira
+    [0.300, 0.356, -0.082, -0.033, -0.015, 0.015, DARKMETAL],// carregador 1
+    [0.288, 0.344, -0.124, -0.082, -0.015, 0.015, DARKMETAL],// carregador 2
+    [0.272, 0.326, -0.158, -0.124, -0.015, 0.015, DARKMETAL],// carregador 3 (curva)
+    [0.452, 0.516, -0.122, -0.033, -0.020, 0.020, WOOD],     // punho
+    [0.448, 0.520, -0.012, 0.034, -0.020, 0.020, STEEL],     // pescoço
+    [0.508, 0.606, -0.034, 0.040, -0.024, 0.024, WOOD],      // coronha
+    [0.600, 0.626, -0.050, 0.050, -0.026, 0.026, DARKMETAL], // soleira
   ];
-  const AK_BASE = [P.s4, P.g0, P.s2];   // STEEL, WOOD, DARKMETAL
 
   const norm = (x, y, z) => {
     const l = Math.hypot(x, y, z) || 1;
@@ -1102,7 +1120,10 @@
     // Posicionamento resolvido DE TRÁS PRA FRENTE: eu digo onde a boca e a
     // soleira devem cair na tela e converto de volta pra espaço de câmera.
     // Tentar adivinhar o vetor da arma direto põe ela no meio da tela.
-    const axis = norm(0.363, -0.175 + kick * 0.08, -0.600);   // boca -> soleira
+    // Eixo quase paralelo à visão: a boca cai junto da mira e o cano
+    // converge pro centro da tela, que é onde o tiro sai. Arma apontando
+    // pra um canto qualquer denuncia que é adesivo.
+    const axis = norm(0.426, -0.374 + kick * 0.10, -0.829);   // boca -> soleira
     let up = norm(0.10, 0.95, -0.28);
     const right = norm(axis.y * up.z - axis.z * up.y,
                        axis.z * up.x - axis.x * up.z,
@@ -1111,15 +1132,16 @@
               right.z * axis.x - right.x * axis.z,
               right.x * axis.y - right.y * axis.x);
     const org = {
-      x: -0.044 + sway * 0.007,
-      y: -0.172 - kick * 0.05 - drop - reloadDip,
-      z: 1.45 - kick * 0.05,
+      x: -0.058 + sway * 0.006,
+      y: -0.070 - kick * 0.045 - drop - reloadDip,
+      z: 1.60 - kick * 0.05,
     };
 
+    const S_ = AK_SCALE;
     const toCam = (px, py, pz) => ({
-      x: org.x + axis.x * px + up.x * py + right.x * pz,
-      y: org.y + axis.y * px + up.y * py + right.y * pz,
-      z: org.z + axis.z * px + up.z * py + right.z * pz,
+      x: org.x + (axis.x * px + up.x * py + right.x * pz) * S_,
+      y: org.y + (axis.y * px + up.y * py + right.y * pz) * S_,
+      z: org.z + (axis.z * px + up.z * py + right.z * pz) * S_,
     });
     const toScreen = (p) => ({
       x: S.cols / 2 + (p.x / p.z) * S.hProj,
@@ -1146,8 +1168,8 @@
         // luz difusa chapada: topo claro, lateral médio, base escuro. É a
         // diferença ENTRE faces que constrói o volume.
         const lam = n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z;
-        const tone = Math.max(P.s1, Math.min(P.g1,
-          AK_BASE[mat] + (lam > 0.55 ? 2 : lam > 0.1 ? 1 : lam > -0.3 ? 0 : -1) - dim));
+        const lvl = lam > 0.55 ? 3 : lam > 0.1 ? 2 : lam > -0.3 ? 1 : 0;
+        const tone = AK_RAMP[mat][Math.max(0, lvl - dim)];
 
         // Preenchimento por VARREDURA, não por passo: amostrar ao longo das
         // arestas deixa buraco em quad diagonal e o mundo aparece por dentro
