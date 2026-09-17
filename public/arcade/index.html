@@ -7,10 +7,10 @@
 <title>ASCII SUBNET</title>
 <style>
   :root {
-    --bg: #050706;
-    --fg: #34d399;
-    --dim: #0f3d2e;
-    --warn: #f87171;
+    --bg: #1b2029;
+    --fg: #2dd4bf;
+    --dim: #2a3340;
+    --warn: #ff6b52;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -26,8 +26,8 @@
   #stage::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
-      repeating-linear-gradient(to bottom, rgba(0,0,0,0.26) 0 1px, transparent 1px 3px),
-      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%);
+      repeating-linear-gradient(to bottom, rgba(0,0,0,0.10) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.42) 100%);
     mix-blend-mode: multiply;
   }
 
@@ -54,14 +54,113 @@
   .opt input[type="range"] { width: 11rem; accent-color: var(--fg); }
   .opt output { min-width: 3.4rem; text-align: left; color: #ecfdf5;
                 font-variant-numeric: tabular-nums; }
-  .muted { color: #14532d; font-size: 0.68rem; letter-spacing: 0.14em; }
+  .muted { color: #5b6573; font-size: 0.68rem; letter-spacing: 0.14em; }
   .score { color: #ecfdf5; font-size: 0.95rem; letter-spacing: 0.2em; }
   .warn { color: var(--warn); }
+
+  /* --- HUD fora da grade: tipografia de verdade, a grade fica com o mundo --- */
+  #hud {
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    font-family: inherit; color: #e8edf3;
+  }
+  #hud [hidden] { display: none; }
+  .hud-tl, .hud-tc, .hud-tr, .hud-bl, .hud-br, .hud-slide, .hud-toast { position: absolute; }
+  .hud-tl { top: 1.1rem; left: 1.4rem; }
+  .hud-tr { top: 1.1rem; right: 1.4rem; text-align: right; }
+  .hud-tc { top: 1.1rem; left: 50%; transform: translateX(-50%); text-align: center; width: min(46rem, 92vw); }
+  .hud-bl { bottom: 1.2rem; left: 1.4rem; }
+  .hud-br { bottom: 1.2rem; right: 1.4rem; text-align: right; }
+
+  .hud-label {
+    font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: #8d97a4; margin-bottom: 0.15rem;
+  }
+  .hud-big {
+    font-size: 2.1rem; font-weight: 600; line-height: 1;
+    letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
+  }
+  #hudIntegrity.low { color: #ff6b52; }
+  .hud-hostiles {
+    margin-top: 0.3rem; font-size: 0.6rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: #ff6b52;
+  }
+  .hud-compass { font-size: 0.78rem; letter-spacing: 0.34em; color: #e8edf3; }
+  .hud-zone { margin-top: 0.15rem; font-size: 0.56rem; letter-spacing: 0.34em; color: #8d97a4; }
+  .hud-banner {
+    margin-top: 1.7rem; font-size: 0.74rem; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase; text-wrap: balance;
+  }
+  .hud-banner-sub { margin-top: 0.3rem; font-size: 0.6rem; letter-spacing: 0.1em; color: #8d97a4; }
+
+  .hud-card {
+    background: rgba(30, 36, 46, 0.7);
+    border: 1px solid rgba(141, 151, 164, 0.22);
+    padding: 0.65rem 1.1rem 0.7rem;
+    min-width: 8.5rem;
+  }
+  .hud-bar {
+    margin-top: 0.35rem; font-size: 0.6rem; letter-spacing: 0.04em; color: #2dd4bf;
+    white-space: nowrap; overflow: hidden;
+  }
+  .hud-ammo { display: flex; align-items: baseline; justify-content: flex-end; gap: 0.4rem; }
+  .hud-slash, .hud-reserve { color: #8d97a4; font-size: 0.8rem; }
+  .hud-reload { margin-top: 0.35rem; margin-bottom: 0; }
+
+  .hud-slide {
+    bottom: 1.6rem; left: 50%; transform: translateX(-50%);
+    font-size: 0.6rem; letter-spacing: 0.28em; color: #8d97a4;
+  }
+  .hud-toast {
+    top: 50%; left: 50%; transform: translate(-50%, 5.5rem);
+    background: rgba(30, 36, 46, 0.86); border: 1px solid rgba(141, 151, 164, 0.22);
+    padding: 0.5rem 1.1rem; font-size: 0.62rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: #b3bcc7; white-space: nowrap;
+  }
+  @media (max-width: 720px) {
+    .hud-big { font-size: 1.4rem; }
+    .hud-toast { white-space: normal; max-width: 80vw; text-align: center; }
+  }
 </style>
 </head>
 <body>
   <div id="stage">
     <canvas id="screen"></canvas>
+
+  <div id="hud" aria-hidden="true">
+    <div class="hud-tl">
+      <div class="hud-label">Wave</div>
+      <div class="hud-big" id="hudWave">01</div>
+      <div class="hud-hostiles" id="hudHostiles">0 HOSTILES REMAINING</div>
+    </div>
+
+    <div class="hud-tc">
+      <div class="hud-compass" id="hudCompass">[ N 000&#176; ]</div>
+      <div class="hud-zone" id="hudZone">CENTRAL COURTYARD</div>
+      <div class="hud-banner" id="hudBanner" hidden></div>
+      <div class="hud-banner-sub" id="hudBannerSub"></div>
+    </div>
+
+    <div class="hud-tr">
+      <div class="hud-label">Pts</div>
+      <div class="hud-big" id="hudPts">000000</div>
+    </div>
+
+    <div class="hud-card hud-bl">
+      <div class="hud-label">Integrity</div>
+      <div class="hud-big" id="hudIntegrity">100</div>
+      <div class="hud-bar" id="hudIntegrityBar">||||||||||||||||||</div>
+    </div>
+
+    <div class="hud-card hud-br">
+      <div class="hud-label">01 / Rifle</div>
+      <div class="hud-ammo"><span class="hud-big" id="hudMag">30</span><span class="hud-slash">/</span><span class="hud-reserve" id="hudReserve">150</span></div>
+      <div class="hud-label hud-reload" id="hudReload">[R] RELOAD</div>
+    </div>
+
+    <div class="hud-slide" id="hudSlide" hidden>[C] SLIDE READY</div>
+    <div class="hud-toast" id="hudToast" hidden>CLICK TO CAPTURE THE MOUSE &#183; ESC TO RELEASE</div>
+  </div>
+
 
     <div class="panel" id="menu">
       <pre id="logo"></pre>

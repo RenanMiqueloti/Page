@@ -116,27 +116,30 @@
   const canvas = document.getElementById("screen");
   const ctx = canvas.getContext("2d", { alpha: false });
 
+  // Paleta semântica: a cor diz O QUE é, não só quão longe está.
+  // cinza = estrutura · ciano = superfície que dá pra pisar · coral = hostil
   const PALETTE = [
-    "#0a2b20", // 0 verde quase apagado (longe)
-    "#10503c",
-    "#17785a",
-    "#22a37a",
-    "#34d399", // 4 verde base
-    "#6ee7b7",
-    "#d1fae5", // 6 quase branco (perto)
-    "#7f1d1d", // 7 inimigo longe
-    "#dc2626",
-    "#f87171", // 9 inimigo perto
-    "#b45309", // 10 boss
-    "#fbbf24", // 11 boss claro
-    "#ecfdf5", // 12 HUD / flash
-    "#1e3a8a", // 13 projétil inimigo
+    "#252c38", // 0 quase o fundo (céu, ruído distante)
+    "#39424f", // 1 preenchimento longe
+    "#4d5766", // 2
+    "#68727f", // 3 preenchimento perto
+    "#8d97a4", // 4 aresta
+    "#b3bcc7", // 5 aresta perto
+    "#e8edf3", // 6 lábio / quina viva
+    "#0d5f6b", // 7 ciano apagado
+    "#15919b", // 8
+    "#2dd4bf", // 9 ciano vivo: escada, passarela, rota
+    "#8c2f22", // 10 coral apagado
+    "#ff6b52", // 11 coral vivo: hostil
+    "#ffffff", // 12 foco / flash
+    "#f2b705", // 13 boss
   ];
   // Dois conjuntos de caracteres que nunca se cruzam: qualquer coisa "pesada"
   // na tela é superfície vertical, qualquer coisa "leve" é piso. É esse
   // contraste — não a cor — que faz o relevo ser lido em ASCII.
-  const RAMP = "-=+*#%@";              // paredes / faces verticais
-  const FLOOR_RAMP = " ....::::;;;";   // pisos e plataformas
+  // O preenchimento é de propósito discreto: o que desenha a forma é a ARESTA.
+  // Encher cada célula com caractere denso foi o que antes achatava a cena.
+  const RAMP = " .:-=+";              // corpo das faces verticais
 
   // Névoa em LUT: evita um Math.pow por caractere desenhado.
   const FOG = new Float32Array(257);
@@ -200,7 +203,7 @@
 
   /** Grade -> canvas. Um fillText por run de mesma cor; espaços não custam nada. */
   function flush() {
-    ctx.fillStyle = "#050706";
+    ctx.fillStyle = "#1b2029";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const buf = [];
@@ -242,7 +245,6 @@
     const horizon = S.rows / 2 + cam.pitch;
     const eyeZ = cam.eyeZ;
     const rampMax = RAMP.length - 1;
-    const floorMax = FLOOR_RAMP.length - 1;
 
     for (let c = 0; c < S.cols; c++) {
       const camX = (2 * c) / (S.cols - 1) - 1;
@@ -269,26 +271,39 @@
         else { t = sideY; sideY += deltaY; mapY += stepY; side = 1; }
 
         // --- topo da célula anterior, de prevT até t (só se o olho está acima)
+        // Desenha a MALHA do piso, não o piso inteiro: é o que deixa o
+        // primeiro plano vazio e faz a arquitetura recortar contra o fundo.
         if (prevH < eyeZ - 0.001) {
           const dz = prevH - eyeZ;                       // negativo
           const yFar = horizon - (dz / t) * vProj;
           const yNear = prevT <= 0.001 ? S.rows : horizon - (dz / prevT) * vProj;
-          let r0 = Math.max(0, Math.ceil(yFar));
-          let r1 = Math.min(yBot, Math.floor(yNear));
+          const r0 = Math.max(0, Math.ceil(yFar));
+          const r1 = Math.min(yBot, Math.floor(yNear));
+          const walk = prevH > 0.05;                     // plataforma = rota ciano
           for (let r = r1; r >= r0; r--) {
             const dist = (dz * vProj) / (horizon - r);   // inverso da projeção
             if (dist <= 0 || dist > CFG.far) continue;
             const wx = cam.x + rayX * dist;
             const wy = cam.y + rayY * dist;
             const fx = wx - Math.floor(wx), fy = wy - Math.floor(wy);
-            const grid = fx < 0.055 || fy < 0.055 || fx > 0.945 || fy > 0.945;
+            // espessura da linha ESCALA com a distância: fixa em unidades de
+            // mundo, ela vira listrão no primeiro plano e serrilha no fundo
+            const thr = Math.min(0.3, Math.max(0.012, dist * 0.014));
+            const near0 = fx < thr || fx > 1 - thr;
+            const near1 = fy < thr || fy > 1 - thr;
+            const node = near0 && near1;
             const fog = fogAt(dist);
-            const checker = ((Math.floor(wx) + Math.floor(wy)) & 1) ? 0.12 : 0;
-            const lit = fog * 0.88 + checker;
-            const code = grid && fog > 0.35
-              ? 43 /* + */
-              : FLOOR_RAMP.charCodeAt(Math.min(floorMax, (lit * floorMax) | 0));
-            put(c, r, code, 1 + Math.min(3, (lit * 4) | 0), dist);
+            let code, p;
+            if (walk) {
+              if (!near0 && !near1) continue;            // plataforma: contorno ciano
+              code = node ? 43 /* + */ : near0 ? 124 /* | */ : 45 /* - */;
+              p = fog > 0.55 ? 9 : fog > 0.3 ? 8 : 7;
+            } else {
+              if (!node) continue;                       // chão raso: só os nós
+              code = 43 /* + */;
+              p = 1 + Math.min(1, (fog * 2) | 0);
+            }
+            put(c, r, code, p, dist);
           }
           if (r0 <= yBot) yBot = Math.min(yBot, r0 - 1);
         }
@@ -301,8 +316,10 @@
           const yBase = horizon - ((prevH - eyeZ) / t) * vProj;
           const r0 = Math.max(0, Math.ceil(yTop));
           const r1 = Math.min(yBot, Math.floor(yBase));
-          const base = Math.min(1, fogAt(t) * (side ? 0.68 : 1.1));
+          const fog = fogAt(t);
+          const base = Math.min(1, fog * (side ? 0.72 : 1.1));
           const span = Math.max(1, r1 - r0);
+          const walk = nextH < 2;                  // plataforma/escada, não parede
 
           // ONDE na face o raio bateu — não a distância. Sem esta coordenada a
           // parede inteira sai como um bloco de um caractere só e a cena não lê
@@ -319,13 +336,13 @@
             const seam = band - Math.floor(band) < 0.18;
             let lit = Math.min(1, base * (0.74 + 0.32 * (1 - (r - r0) / span)));
             let code, p;
-            if (r === r0 && cap && corner) { code = 43 /* + */; p = 6; }
-            else if (r === r0 && cap)      { code = 61 /* = */; p = Math.min(6, 3 + ((lit * 3) | 0)); }
-            else if (corner)               { code = 124 /* | */; p = Math.min(6, 2 + ((lit * 5) | 0)); }
-            else if (seam)                 { code = 61 /* = */; p = 1 + Math.min(3, ((lit * 4) | 0)); }
+            if (r === r0 && cap && corner) { code = 43 /* + */; p = walk ? 9 : 6; }
+            else if (r === r0 && cap)      { code = 61 /* = */; p = walk ? 9 : Math.min(6, 4 + ((lit * 2) | 0)); }
+            else if (corner)               { code = 124 /* | */; p = walk ? 8 : Math.min(5, 3 + ((lit * 3) | 0)); }
+            else if (seam)                 { code = 45 /* - */; p = walk ? 7 : 1 + Math.min(2, ((lit * 3) | 0)); }
             else {
-              code = RAMP.charCodeAt(Math.min(rampMax, Math.max(0, (lit * rampMax) | 0)));
-              p = 2 + Math.min(4, (lit * 5) | 0);
+              code = RAMP.charCodeAt(Math.min(rampMax, Math.max(1, (lit * rampMax) | 0)));
+              p = walk ? 7 : Math.min(3, 2 + ((lit * 2) | 0));
             }
             put(c, r, code, p, t);
           }
@@ -341,7 +358,7 @@
         const ang = (Math.atan2(rayY, rayX) * 57.2958) | 0;
         for (let r = 0; r <= yBot; r++) {
           const hash = ((ang * 131) ^ (r * 7919)) & 1023;
-          if (hash < 9) put(c, r, 46 /* . */, 1, CFG.far + 10);
+          if (hash < 7) put(c, r, 46 /* . */, 0, CFG.far + 10);
         }
       }
     }
@@ -396,6 +413,7 @@
     const sorted = list
       .map((e) => ({ e, d: (e.x - cam.x) ** 2 + (e.y - cam.y) ** 2 }))
       .sort((a, b) => b.d - a.d);
+    let aimed = null;
 
     for (const { e } of sorted) {
       const relX = e.x - cam.x, relY = e.y - cam.y;
@@ -418,6 +436,19 @@
       const artW = art[0].length, artH = art.length;
       const flash = e.hitFlash > 0;
 
+      // plaqueta do hostil: marcador sempre, nome + distância só no alvo mirado
+      if (e.def) {
+        const markCol = Math.round(midCol) - 1;
+        const markRow = Math.max(0, r0 - 1);
+        if (markCol > 0 && markCol < S.cols - 3 && rowTop > 1) {
+          text(markCol, markRow, "[v]", e.boss ? 13 : 11);
+        }
+        const offCenter = Math.abs(midCol - S.cols / 2);
+        if (offCenter < spanCols / 2 + 1 && ty < (aimed ? aimed.d : 1e9)) {
+          aimed = { d: ty, col: Math.round(midCol), row: Math.max(0, r0 - 2), e };
+        }
+      }
+
       for (let c = c0; c <= c1; c++) {
         const u = (((c - (midCol - spanCols / 2)) / spanCols) * artW) | 0;
         if (u < 0 || u >= artW) continue;
@@ -427,11 +458,16 @@
           const ch = art[v].charCodeAt(u);
           if (!ch || ch === 32) continue;
           const near = Math.max(0, 1 - ty / CFG.far);
-          let p = e.boss ? 10 + (near > 0.55 ? 1 : 0) : 7 + Math.min(2, (near * 3) | 0);
+          let p = e.boss ? 13 : near > 0.45 ? 11 : 10;
           if (flash) p = 12;
           put(c, r, ch, p, ty);
         }
       }
+    }
+
+    if (aimed) {
+      const label = `${aimed.e.name} . ${aimed.d.toFixed(0)} m`;
+      text(aimed.col - (label.length >> 1), aimed.row, label, 5);
     }
   }
 
@@ -613,13 +649,18 @@
 
   // ---------------------------------------------------------------- combate
   ART.shot = ["*"];
+  // Na arte da arma, ':' e '.' são material ciano e o resto é corpo cinza —
+  // a cor sai do próprio caractere, sem segunda camada pra manter alinhada.
   ART.gun = [
-    "              ____   ",
-    "        _____/    \\_ ",
-    "   ____|  o         |",
-    "  |_____  ____ _____|",
-    "        \\|    |      ",
-    "         |____|      ",
+    "                      ________        ",
+    "               ______/        \\___    ",
+    "          ____/                   \\   ",
+    "     ____|    o     ::::::::       |  ",
+    "    |____    ____  ::::::::::  ____|  ",
+    "         \\__|    |_::::::::::_|       ",
+    "            |    |  ::::::::  |       ",
+    "            |____|  ........  |       ",
+    "                   \\__________/       ",
   ];
 
   const TYPES = {
@@ -885,9 +926,15 @@
     if (boss) q.unshift("boss");
     game.spawnQueue = q;
     game.nextSpawn = 0.8;
+    const bossName = BOSS_NAMES[(n / 3 - 1) % BOSS_NAMES.length | 0];
     game.banner = {
-      txt: boss ? `WAVE ${n} :: ${BOSS_NAMES[(n / 3 - 1) % BOSS_NAMES.length | 0]} INBOUND` : `WAVE ${n}`,
-      life: 2.6,
+      txt: boss
+        ? `WAVE ${String(n).padStart(2, "0")} // BOSS // ${bossName}`
+        : `WAVE ${String(n).padStart(2, "0")} // ${q.includes("ransom") ? "RANSOM ONLINE" : q.includes("trojan") ? "TROJAN ONLINE" : "WORMS INBOUND"}`,
+      sub: boss
+        ? `${bossName}: rajada a distancia e reforco constante. Use a passarela.`
+        : "WORM: corpo a corpo. TROJAN: tiro a distancia. RANSOM: blindado e lento.",
+      life: 3.4,
     };
     sfx("wave");
   }
@@ -993,89 +1040,111 @@
     const art = ART.gun;
     const kick = Math.round(player.kick * 2.2);
     const sway = Math.round(Math.sin(player.bob * 9) * 1.3);
-    const c0 = Math.floor(S.cols * 0.52) + sway;
-    const r0 = S.rows - art.length - 3 + kick + (player.slideT > 0 ? 2 : 0);
+    const c0 = Math.floor(S.cols * 0.44) + sway;
+    const r0 = S.rows - art.length - 2 + kick + (player.slideT > 0 ? 2 : 0);
+    const reloading = player.reloadT > 0;
     for (let v = 0; v < art.length; v++) {
       for (let u = 0; u < art[v].length; u++) {
         const ch = art[v].charCodeAt(u);
         if (!ch || ch === 32) continue;
-        put(c0 + u, r0 + v, ch, player.reloadT > 0 ? 2 : 4, -1);
+        const cyan = ch === 58 /* : */ || ch === 46 /* . */;
+        const p = reloading ? (cyan ? 7 : 2) : cyan ? 9 : 4;
+        put(c0 + u, r0 + v, ch, p, -1);
       }
     }
     if (player.kick > 0.6) {
-      text(c0 + 17, r0 - 1, "\\|/", 12);
-      text(c0 + 17, r0, "-*-", 12);
+      text(c0 + 21, r0 - 1, "\\|/", 12);
+      text(c0 + 21, r0, "-*-", 12);
     }
-  }
-
-  /** Apaga um trecho da linha pra o texto do HUD não brigar com o cenário.
-   *  Profundidade 0: barra o mundo (sempre > 0) mas ainda deixa o texto do
-   *  HUD (que escreve com -1) passar por cima. */
-  function clearSpan(col, row, len) {
-    for (let i = 0; i < len; i++) put(col + i, row, 32, 0, 0);
   }
 
   function bar(val, max, len) {
     const n = Math.max(0, Math.min(len, Math.round((val / max) * len)));
-    return "[" + "|".repeat(n) + ".".repeat(len - n) + "]";
+    return "|".repeat(n) + ".".repeat(len - n);
   }
 
-  function renderHUD(cam) {
-    const cx = S.cols >> 1, cy = S.rows >> 1;
+  // Zonas do mapa: o HUD nomear onde você está é o que faz um pátio de ASCII
+  // virar "lugar" em vez de labirinto.
+  const ZONES = [
+    { x0: 1, y0: 0, x1: 42, y1: 5, name: "NORTH CATWALK" },
+    { x0: 2, y0: 8, x1: 9, y1: 12, name: "WEST BLOCK" },
+    { x0: 27, y0: 8, x1: 34, y1: 12, name: "EAST BLOCK" },
+    { x0: 13, y0: 10, x1: 22, y1: 17, name: "CORE STACK" },
+    { x0: 1, y0: 18, x1: 42, y1: 23, name: "SOUTH YARD" },
+    { x0: 1, y0: 24, x1: 42, y1: 28, name: "SERVICE LANE" },
+  ];
+  function zoneName() {
+    const x = player.x | 0, y = player.y | 0;
+    for (const z of ZONES) if (x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1) return z.name;
+    return "CENTRAL COURTYARD";
+  }
 
-    // bússola: ajuda a não se perder girando 360°
-    const tanF = Math.tan(CFG.fov / 2);
-    for (const [ang, label] of [[0, "E"], [Math.PI / 2, "S"], [Math.PI, "W"], [-Math.PI / 2, "N"]]) {
-      let d = ang - player.yaw;
-      while (d > Math.PI) d -= Math.PI * 2;
-      while (d < -Math.PI) d += Math.PI * 2;
-      if (Math.abs(d) > CFG.fov / 2) continue;
-      text(Math.round(cx + (Math.tan(d) / tanF) * cx) , 1, label, 3);
-    }
+  // --- HUD em DOM: tipografia de verdade fora da grade, que fica só com o
+  //     que pertence ao mundo (mira, marcador de acerto, dano).
+  const hud = {};
+  for (const id of ["Wave", "Hostiles", "Compass", "Zone", "Pts", "Integrity", "IntegrityBar",
+                    "Mag", "Reserve", "Reload", "Toast", "Slide", "Banner", "BannerSub"]) {
+    hud[id] = document.getElementById("hud" + id);
+  }
+  const hudLast = {};
+  function setHud(key, value) {
+    if (hudLast[key] === value || !hud[key]) return;
+    hudLast[key] = value;
+    hud[key].textContent = value;
+  }
+  function showHud(key, on) {
+    if (!hud[key] || hudLast[key + "!"] === on) return;
+    hudLast[key + "!"] = on;
+    hud[key].hidden = !on;
+  }
 
-    // mira, com abertura reagindo ao movimento
-    const open = player.slideT > 0 ? 4 : 2;
-    text(cx - open - 1, cy, "-", 12); text(cx + open + 1, cy, "-", 12);
-    put(cx, cy - 1, 124, 12, -1); put(cx, cy + 1, 124, 12, -1);
-    if (game.hitMark > 0) {
-      text(cx - 1, cy - 1, "\\", 9); text(cx + 1, cy - 1, "/", 9);
-      text(cx - 1, cy + 1, "/", 9); text(cx + 1, cy + 1, "\\", 9);
-    }
-
-    // barra inferior
-    const hp = Math.round(player.hp);
-    const left = `HP ${bar(hp, CFG.hpMax, 18)} ${String(hp).padStart(3)}`;
-    clearSpan(0, S.rows - 2, S.cols);
-    text(2, S.rows - 2, left, hp < 35 ? 9 : 4);
-
-    const reloading = player.reloadT > 0;
-    const right = reloading
-      ? `RELOADING ${bar(CFG.reload - player.reloadT, CFG.reload, 8)}   WAVE ${game.wave}   SCORE ${game.score}`
-      : `AMMO ${String(player.ammo).padStart(2)}/${player.reserve}   WAVE ${game.wave}   SCORE ${game.score}`;
-    text(S.cols - right.length - 2, S.rows - 2, right, reloading ? 11 : 4);
-
-    if (!document.pointerLockElement) {
-      const hint = "CLIQUE PRA CAPTURAR O MOUSE  //  SETAS OU ARRASTAR TAMBEM MIRAM";
-      clearSpan(cx - (hint.length >> 1) - 1, S.rows - 4, hint.length + 2);
-      text(cx - (hint.length >> 1), S.rows - 4, hint, 2);
-    }
+  const CARDINAL = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  function updateHud() {
+    const deg = (((player.yaw * 180) / Math.PI + 90) % 360 + 360) % 360;
+    setHud("Compass", `[ ${CARDINAL[Math.round(deg / 45) % 8]} ${String(Math.round(deg)).padStart(3, "0")}\u00B0 ]`);
+    setHud("Zone", zoneName());
+    setHud("Wave", String(game.wave).padStart(2, "0"));
 
     const alive = game.enemies.length + game.spawnQueue.length;
-    clearSpan(0, 1, 16);
-    text(2, 1, `THREATS ${String(alive).padStart(2)}`, alive > 0 ? 3 : 2);
-    if (game.combo > 2) text(2, 2, `COMBO x${game.combo}`, 5);
+    setHud("Hostiles", alive === 1 ? "1 HOSTILE REMAINING" : `${alive} HOSTILES REMAINING`);
+    setHud("Pts", String(game.score).padStart(6, "0"));
 
-    // banner de onda
+    const hp = Math.round(player.hp);
+    setHud("Integrity", String(hp));
+    setHud("IntegrityBar", bar(hp, CFG.hpMax, 18));
+    hud.Integrity?.classList.toggle("low", hp < 35);
+
+    setHud("Mag", String(player.ammo).padStart(2, "0"));
+    setHud("Reserve", String(player.reserve));
+    setHud("Reload", player.reloadT > 0 ? "RELOADING" : "[R] RELOAD");
+
+    showHud("Slide", game.mode === "play" && player.slideT <= 0 && player.grounded);
+    showHud("Toast", game.mode === "play" && !document.pointerLockElement);
+    showHud("Banner", !!game.banner);
     if (game.banner) {
-      const b = game.banner.txt;
-      clearSpan(cx - (b.length >> 1) - 2, 4, b.length + 4);
-      text(cx - (b.length >> 1), 4, b, 12);
+      setHud("Banner", game.banner.txt);
+      setHud("BannerSub", game.banner.sub || "");
+    }
+  }
+
+  function renderHUD() {
+    const cx = S.cols >> 1, cy = S.rows >> 1;
+
+    // mira: abre quando você desliza, fecha parado
+    const open = player.slideT > 0 ? 3 : 1;
+    put(cx - open - 1, cy, 45, 12, -1);
+    put(cx + open + 1, cy, 45, 12, -1);
+    put(cx, cy - 1, 39, 12, -1);
+    put(cx, cy + 1, 39, 12, -1);
+    if (game.hitMark > 0) {
+      text(cx - 2, cy - 1, "\\", 11); text(cx + 2, cy - 1, "/", 11);
+      text(cx - 2, cy + 1, "/", 11); text(cx + 2, cy + 1, "\\", 11);
     }
 
-    // vinheta de dano: as bordas piscam vermelho logo depois de levar hit
+    // dano: as bordas piscam coral logo depois do hit
     const since = game.t - player.lastHit;
     if (since < 0.45) {
-      const p = since < 0.2 ? 9 : 8;
+      const p = since < 0.2 ? 11 : 10;
       for (let c = 0; c < S.cols; c += 2) { put(c, 0, 61, p, -1); put(c, S.rows - 1, 61, p, -1); }
       for (let r = 0; r < S.rows; r += 2) { put(0, r, 124, p, -1); put(S.cols - 1, r, 124, p, -1); }
     }
@@ -1094,7 +1163,8 @@
     renderSprites(cam, game.enemies.concat(game.shots));
     renderPopups(cam);
     renderGun();
-    renderHUD(cam);
+    renderHUD();
+    updateHud();
     flush();
     game.shake = Math.max(0, game.shake - dt * 4);
     game.hitMark = Math.max(0, game.hitMark - dt);
