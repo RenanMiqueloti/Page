@@ -76,11 +76,11 @@ hostil só desce o gradiente, o que basta pra contornar torre e subir escada.
 | Novo tipo de hostil | `TYPES` + arte em `ART` |
 | Composição das ondas | `startWave()` |
 | Nome das zonas do HUD | `ZONES` |
-| Silhueta da arma | `GUN` (retângulos, não arte linha a linha) |
+| Silhueta da arma | `AK` (retângulos; altura em linhas ÷ 1.45) |
 | Efeitos sonoros | `sfx()` — WebAudio, sem asset |
 
 ## Pendências conhecidas
 
 - Sem suporte a touch: precisa de mouse e teclado.
 - Sem recorde persistente (dá pra plugar `localStorage` em `gameOver()`).
-- A arma é uma silhueta de caixas; a referência usa uma peça bem mais detalhada.
+- A arma é uma silhueta de caixas: lê como AK de longe, sem detalhe fino de perto.

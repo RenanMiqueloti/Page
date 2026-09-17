@@ -962,45 +962,79 @@
   }
 
   // ------------------------------------------------------------------ arma
-  // Desenhada como massa sólida com detalhe por cima, igual às superfícies do
-  // mundo — arte ASCII linha a linha não escala junto com a grade.
-  const GUN = [
-    [-38, -11, -16, -8, P.s3],   // cano
-    [-42, -12, -38, -7, P.s4],   // boca
-    [-18, -16, 14, -5, P.s4],    // corpo
-    [-6, -19, 8, -16, P.s3],     // mira de topo
-    [14, -13, 26, -4, P.s3],     // coronha
-    [-10, -5, 4, 3, P.s2],       // carregador
+  // AK-47 em vista de primeira pessoa, montada como retângulos em coordenadas
+  // de célula — arte linha a linha não acompanha a grade quando ela muda de
+  // tamanho. A assinatura da arma são três coisas: carregador banana curvo
+  // (feito de três blocos deslocados), tubo de gás acima do cano, e massa de
+  // mira na ponta. Sem isso vira "fuzil genérico".
+  //          [x0, x1, y0, y1, tom]   y negativo = pra cima
+  const STEEL = 0, WOOD = 1, EDGE = 2;
+  // ATENÇÃO à escala: a célula é 1.45x mais alta que larga, então altura em
+  // LINHAS precisa ser dividida por isso pra proporção sair certa. Desenhar
+  // como se a célula fosse quadrada deixa a arma com o dobro da altura.
+  // Proporção alvo: 96 células de comprimento por ~19 linhas (~3.5:1, que é a
+  // razão real de uma AK com carregador).
+  const AK = [
+    [-64, -58, -19, -17, STEEL],   // freio de boca
+    [-59, -57, -22, -16, STEEL],   // massa de mira
+    [-57, -34, -18, -17, STEEL],   // cano
+    [-52, -34, -21, -20, STEEL],   // tubo de gás
+    [-53, -49, -22, -19, STEEL],   // bloco de gás
+    [-47, -33, -21, -16, WOOD],    // guarda-mão
+    [-46, -34, -16, -15, WOOD],
+    [-31, -3, -20, -13, STEEL],    // caixa da culatra
+    [-31, -5, -21, -20, EDGE],     // tampa superior
+    [-29, -25, -22, -21, STEEL],   // alça de mira
+    [-21, -13, -13, -9, STEEL],    // carregador banana: três blocos que
+    [-23, -15, -9, -6, STEEL],     //   avançam pra frente enquanto descem
+    [-26, -18, -6, -3, STEEL],
+    [-10, -3, -13, -8, WOOD],      // punho
+    [-9, -4, -8, -4, WOOD],
+    [-4, 7, -19, -15, STEEL],      // pescoço da coronha
+    [6, 24, -19, -14, WOOD],       // coronha
+    [22, 32, -21, -12, WOOD],      // soleira
   ];
+  const AK_TONE = [P.s2, P.s3, P.s4];
+
   function renderGun() {
     const kick = Math.round(player.kick * 2.5);
     const sway = Math.round(Math.sin(player.bob * 9) * 1.6);
-    const ax = ((S.cols * 0.52) | 0) + sway;
-    const ay = S.rows - 2 + kick + (player.slideT > 0 ? 3 : 0);
+    const ax = ((S.cols * 0.47) | 0) + sway;
+    const ay = S.rows - 1 + kick + (player.slideT > 0 ? 4 : 0);
     const dim = player.reloadT > 0 ? 1 : 0;
+    const tilt = (x) => Math.round(x * 0.08);   // cano aponta pro centro da tela
 
-    for (const [x0, y0, x1, y1, t] of GUN) {
+    for (const [x0, x1, y0, y1, kind] of AK) {
+      const t = AK_TONE[kind];
       for (let x = x0; x <= x1; x++) {
+        const shear = tilt(x);
         for (let y = y0; y <= y1; y++) {
-          const c = ax + x, r = ay + y;
+          const c = ax + x, r = ay + y + shear;
           if (c < 0 || r < 0 || c >= S.cols || r >= S.rows) continue;
-          const top = y === y0;
-          const edge = x === x0 || x === x1;
-          const tone = top ? Math.min(P.s5, t + 2) : edge ? Math.max(P.s0, t - 1) : t - dim;
+          const tone = y === y0 ? Math.min(P.s5, t + 2)              // topo pega luz
+                     : x === x0 || x === x1 ? Math.max(P.s0, t - 1)  // quina some
+                     : t - dim;
           put(c, r, SOLID, Math.max(P.s0, tone), Z.gun);
         }
       }
     }
-    // faixa ciano no corpo: o único ponto saturado do primeiro plano
-    for (let x = -14; x <= 10; x += 2) {
-      for (let y = -14; y <= -7; y += 2) {
-        if (((x + y) & 3) === 0) put(ax + x, ay + y, 46 /* . */, P.cy2, Z.gunDetail);
-      }
+
+    // ventilação do guarda-mão: o detalhe que lê como AK de perto
+    for (let x = -45; x <= -35; x += 3) {
+      const r = ay + tilt(x) - 20;
+      put(ax + x, r, 61 /* = */, P.s5, Z.gunDetail);
+      put(ax + x, r + 1, 61, P.s4, Z.gunDetail);
     }
+    // marca ciano na culatra: único ponto saturado do primeiro plano
+    for (let x = -28; x <= -10; x += 5) {
+      put(ax + x, ay + tilt(x) - 16, 46 /* . */, P.cy2, Z.gunDetail);
+    }
+
     if (player.kick > 0.6) {
-      text(ax - 46, ay - 13, "\\", P.ink, Z.muzzle);
-      text(ax - 46, ay - 9, "-", P.ink, Z.muzzle);
-      text(ax - 46, ay - 5, "/", P.ink, Z.muzzle);
+      const mr = ay + tilt(-66) - 18;
+      text(ax - 67, mr - 1, "\\", P.ink, Z.muzzle);
+      text(ax - 68, mr, "-", P.ink, Z.muzzle);
+      text(ax - 67, mr + 1, "/", P.ink, Z.muzzle);
     }
   }
 
