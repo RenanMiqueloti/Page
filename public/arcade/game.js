@@ -30,7 +30,7 @@
     speedSprint: 5.5,
     speedSlide: 7.8,
     slideTime: 0.45,
-    sens: 0.0022,
+    sens: 0.0015,          // base; o jogador ajusta por cima disso
     hpMax: 100,
     regenDelay: 2.5,       // segundos sem tomar dano antes de regenerar
     regenRate: 25,         // hp por segundo
@@ -168,6 +168,9 @@
     const adv = ctx.measureText("M").width || 60;
     ctx.font = `${(S.charW / adv) * 100}px ${FONT}`;
     ctx.textBaseline = "top";
+
+    S.hProj = S.cols / 2 / Math.tan(CFG.fov / 2);
+    S.vProj = S.hProj / CFG.charAspect;   // linhas por unidade de inclinação
   }
   window.addEventListener("resize", resize);
   document.fonts?.ready?.then(resize).catch(() => {});
@@ -298,13 +301,33 @@
           const yBase = horizon - ((prevH - eyeZ) / t) * vProj;
           const r0 = Math.max(0, Math.ceil(yTop));
           const r1 = Math.min(yBot, Math.floor(yBase));
-          const base = Math.min(1, fogAt(t) * (side ? 0.78 : 1.06));
+          const base = Math.min(1, fogAt(t) * (side ? 0.68 : 1.1));
           const span = Math.max(1, r1 - r0);
+
+          // ONDE na face o raio bateu — não a distância. Sem esta coordenada a
+          // parede inteira sai como um bloco de um caractere só e a cena não lê
+          // como 3D; com ela, as arestas e ranhuras convergem pela perspectiva.
+          const hitU = side ? cam.x + rayX * t : cam.y + rayY * t;
+          const u = hitU - Math.floor(hitU);
+          const corner = u < 0.04 || u > 0.96;     // quina entre duas células
+          const cap = Math.ceil(yTop) >= 0;        // o lábio está na tela?
+          const tv = t / vProj;
+
           for (let r = r1; r >= r0; r--) {
-            // topo da face mais claro: dá silhueta a degraus empilhados
-            const lit = Math.min(1, base * (0.74 + 0.32 * (1 - (r - r0) / span)));
-            const code = RAMP.charCodeAt(Math.min(rampMax, Math.max(0, (lit * rampMax) | 0)));
-            put(c, r, code, 2 + Math.min(4, (lit * 5) | 0), t);
+            const worldZ = eyeZ + (horizon - r) * tv;
+            const band = worldZ * 3.2;             // 3 ranhuras por unidade
+            const seam = band - Math.floor(band) < 0.18;
+            let lit = Math.min(1, base * (0.74 + 0.32 * (1 - (r - r0) / span)));
+            let code, p;
+            if (r === r0 && cap && corner) { code = 43 /* + */; p = 6; }
+            else if (r === r0 && cap)      { code = 61 /* = */; p = Math.min(6, 3 + ((lit * 3) | 0)); }
+            else if (corner)               { code = 124 /* | */; p = Math.min(6, 2 + ((lit * 5) | 0)); }
+            else if (seam)                 { code = 61 /* = */; p = 1 + Math.min(3, ((lit * 4) | 0)); }
+            else {
+              code = RAMP.charCodeAt(Math.min(rampMax, Math.max(0, (lit * rampMax) | 0)));
+              p = 2 + Math.min(4, (lit * 5) | 0);
+            }
+            put(c, r, code, p, t);
           }
           if (r0 <= yBot) yBot = Math.min(yBot, r0 - 1);
         }
@@ -488,7 +511,7 @@
     // setas sempre miram: é o único caminho que não depende do pointer lock
     const lookX = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0);
     const lookY = (keys.ArrowDown ? 1 : 0) - (keys.ArrowUp ? 1 : 0);
-    if (lookX || lookY) look(lookX * dt * 620, lookY * dt * 380);
+    if (lookX || lookY) look(lookX * dt * 1200, lookY * dt * 500);
 
     if (keys.Space && player.grounded && player.slideT <= 0) {
       player.vz = CFG.jumpV; player.grounded = false; sfx("jump");
@@ -529,12 +552,32 @@
 
   // ------------------------------------------------------------------ input
   const mouse = { down: false };
+  const AIM = { mult: 1 };
+
+  function setSens(v, save) {
+    AIM.mult = Math.min(2.5, Math.max(0.3, v || 1));
+    for (const i of document.querySelectorAll(".sens")) i.value = String(AIM.mult);
+    for (const o of document.querySelectorAll(".sensOut")) o.textContent = `${AIM.mult.toFixed(2)}x`;
+    // localStorage pode lançar (aba privada, cookies bloqueados): nunca é fatal
+    if (save) { try { localStorage.setItem("subnet.sens", String(AIM.mult)); } catch (_) {} }
+  }
+
+  try {
+    const saved = parseFloat(localStorage.getItem("subnet.sens"));
+    if (saved > 0) AIM.mult = Math.min(2.5, Math.max(0.3, saved));
+  } catch (_) {}
+  for (const i of document.querySelectorAll(".sens")) {
+    i.addEventListener("input", () => setSens(parseFloat(i.value), true));
+  }
+  setSens(AIM.mult, false);
 
   window.addEventListener("keydown", (e) => {
     keys[e.code] = true;
     if (e.code.startsWith("Arrow") || e.code === "Space" || e.code === "Tab") e.preventDefault();
     if (e.code === "KeyP" && game.mode === "play") pause();
     if (e.code === "KeyM") { game.muted = !game.muted; }
+    if (e.code === "BracketLeft") setSens(AIM.mult - 0.1, true);
+    if (e.code === "BracketRight") setSens(AIM.mult + 0.1, true);
   });
   window.addEventListener("keyup", (e) => { keys[e.code] = false; });
   window.addEventListener("blur", () => { for (const k in keys) keys[k] = false; mouse.down = false; });
@@ -543,8 +586,11 @@
   window.addEventListener("mouseup", (e) => { if (e.button === 0) mouse.down = false; });
 
   function look(dx, dy) {
-    player.yaw += dx * CFG.sens;
-    player.pitch -= dy * CFG.sens * 220;
+    const sens = CFG.sens * AIM.mult;
+    player.yaw += dx * sens;
+    // pitch vive em LINHAS, não em radianos: converter pelo mesmo vProj do
+    // renderer é o que mantém os dois eixos com a mesma sensibilidade angular
+    player.pitch -= dy * sens * S.vProj;
     const lim = S.rows * 0.85;
     player.pitch = Math.max(-lim, Math.min(lim, player.pitch));
   }
@@ -619,10 +665,9 @@
     game.shake = Math.max(game.shake, 0.6);
     sfx("shot");
 
-    const vProj = S.cols / 2 / Math.tan(CFG.fov / 2) / CFG.charAspect;
     const spread = (moving ? CFG.spreadMove : CFG.spread) * (player.grounded ? 1 : 1.9);
     const yaw = player.yaw + (Math.random() - 0.5) * spread * 6;
-    const slope = player.pitch / vProj + (Math.random() - 0.5) * spread * 6;
+    const slope = player.pitch / S.vProj + (Math.random() - 0.5) * spread * 6;
 
     const hit = hitscan(player.x, player.y, player.eyeZ, yaw, slope, CFG.far);
     if (!hit) return;

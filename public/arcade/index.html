@@ -49,6 +49,11 @@
          font: inherit; font-size: 0.82rem; letter-spacing: 0.22em; text-transform: uppercase;
          padding: 0.7rem 2.2rem; cursor: pointer; transition: background 120ms, color 120ms; }
   .cta:hover, .cta:focus-visible { background: var(--fg); color: #04120c; outline: none; }
+  .opt { display: flex; align-items: center; gap: 0.75rem; font-size: 0.72rem;
+         color: #6ee7b7; letter-spacing: 0.1em; text-transform: uppercase; }
+  .opt input[type="range"] { width: 11rem; accent-color: var(--fg); }
+  .opt output { min-width: 3.4rem; text-align: left; color: #ecfdf5;
+                font-variant-numeric: tabular-nums; }
   .muted { color: #14532d; font-size: 0.68rem; letter-spacing: 0.14em; }
   .score { color: #ecfdf5; font-size: 0.95rem; letter-spacing: 0.2em; }
   .warn { color: var(--warn); }
@@ -73,7 +78,13 @@
         <span><b>R</b> recarregar</span>
         <span><b>P / Esc</b> pausar</span>
         <span><b>M</b> mudo</span>
+        <span><b>[ ]</b> sensibilidade</span>
       </div>
+    <label class="opt" for="sensMenu">
+      <span>Sensibilidade</span>
+      <input class="sens" id="sensMenu" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+      <output class="sensOut" for="sensMenu">1.00x</output>
+    </label>
       <button class="cta" id="start">Iniciar</button>
       <span class="muted">desktop · mouse + teclado · sem login</span>
     </div>
@@ -81,6 +92,11 @@
     <div class="panel" id="pause" hidden>
       <h2>Pausado</h2>
       <p>Clique na tela pra recapturar o mouse e continuar.</p>
+    <label class="opt" for="sensPause">
+      <span>Sensibilidade</span>
+      <input class="sens" id="sensPause" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+      <output class="sensOut" for="sensPause">1.00x</output>
+    </label>
       <button class="cta" id="resume">Continuar</button>
     </div>
 
