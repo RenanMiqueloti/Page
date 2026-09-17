@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>ASCII SUBNET</title>
+<style>
+  :root {
+    --bg: #050706;
+    --fg: #34d399;
+    --dim: #0f3d2e;
+    --warn: #f87171;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--fg);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    overflow: hidden;
+  }
+  #stage { position: relative; width: 100vw; height: 100vh; cursor: crosshair; }
+  #screen { display: block; width: 100%; height: 100%; background: var(--bg); }
+
+  /* varredura de CRT — puramente cosmético, sem custo de JS */
+  #stage::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(to bottom, rgba(0,0,0,0.26) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%);
+    mix-blend-mode: multiply;
+  }
+
+  .panel {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1.1rem;
+    background: rgba(5,7,6,0.88); backdrop-filter: blur(2px);
+    text-align: center; padding: 2rem; z-index: 5;
+  }
+  .panel[hidden] { display: none; }
+  .panel pre { margin: 0; font-size: clamp(6px, 1.15vw, 13px); line-height: 1.05; color: var(--fg);
+               text-shadow: 0 0 12px rgba(52,211,153,0.45); }
+  .panel h2 { margin: 0; font-size: 1.1rem; letter-spacing: 0.35em; text-transform: uppercase; }
+  .panel p { margin: 0; max-width: 46rem; color: #a7f3d0; font-size: 0.82rem; line-height: 1.7; }
+  .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+          gap: 0.35rem 1.6rem; font-size: 0.74rem; color: #6ee7b7; max-width: 42rem; }
+  .keys b { color: #ecfdf5; font-weight: 600; }
+  .cta { margin-top: 0.4rem; border: 1px solid var(--fg); background: transparent; color: var(--fg);
+         font: inherit; font-size: 0.82rem; letter-spacing: 0.22em; text-transform: uppercase;
+         padding: 0.7rem 2.2rem; cursor: pointer; transition: background 120ms, color 120ms; }
+  .cta:hover, .cta:focus-visible { background: var(--fg); color: #04120c; outline: none; }
+  .muted { color: #14532d; font-size: 0.68rem; letter-spacing: 0.14em; }
+  .score { color: #ecfdf5; font-size: 0.95rem; letter-spacing: 0.2em; }
+  .warn { color: var(--warn); }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="screen"></canvas>
+
+    <div class="panel" id="menu">
+      <pre id="logo"></pre>
+      <p>Primeira pessoa em ASCII. Ondas de malware invadem o datacenter — segura o
+         perímetro, usa as escadas pra ganhar altura e mira na cabeça.</p>
+      <div class="keys">
+        <span><b>WASD</b> mover</span>
+        <span><b>Mouse</b> olhar</span>
+        <span><b>Click</b> atirar</span>
+        <span><b>Shift</b> correr</span>
+        <span><b>Space</b> pular</span>
+        <span><b>Ctrl / C</b> deslizar</span>
+        <span><b>R</b> recarregar</span>
+        <span><b>P / Esc</b> pausar</span>
+        <span><b>M</b> mudo</span>
+      </div>
+      <button class="cta" id="start">Iniciar</button>
+      <span class="muted">desktop · mouse + teclado · sem login</span>
+    </div>
+
+    <div class="panel" id="pause" hidden>
+      <h2>Pausado</h2>
+      <p>Clique na tela pra recapturar o mouse e continuar.</p>
+      <button class="cta" id="resume">Continuar</button>
+    </div>
+
+    <div class="panel" id="over" hidden>
+      <pre id="overLogo"></pre>
+      <div class="score" id="finalScore"></div>
+      <button class="cta" id="again">Rodar de novo</button>
+    </div>
+  </div>
+  <script src="./game.js"></script>
+</body>
+</html>
