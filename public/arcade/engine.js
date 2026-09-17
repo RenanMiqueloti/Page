@@ -60,7 +60,7 @@
     s0: 2, s1: 3, s2: 4, s3: 5, s4: 6, s5: 7,   // estrutura, escuro -> claro
     ok0: 8, ok1: 9, ok2: 10,                     // esmeralda: rota, seu
     bad0: 11, bad1: 12,                          // âmbar: anomalia
-    boss: 13, ink: 14, hurt: 15,
+    boss: 13, ink: 14, hurt: 15, g0: 16, g1: 17,
   };
   const PALETTE = [
     "#0b0910", // 0 céu
@@ -79,6 +79,8 @@
     "#ffd166", // 13 boss
     "#f4f1f7", // 14 foco / flash
     "#ff4d6d", // 15 dano no player
+    "#7d7289", // 16 arma: face iluminada
+    "#9d92aa", // 17 arma: face de topo
   ];
 
   const SOLID = 1;         // código sentinela: célula preenchida (fillRect)
@@ -532,7 +534,7 @@
 
       if (e.def) {
         const mc = Math.round(midCol) - 1;
-        if (mc > 0 && mc < S.cols - 3 && rowTop > 1) text(mc, Math.max(0, r0 - 1), "[v]", tone, ty - 0.01);
+        if (mc > 0 && mc < S.cols - 3 && rowTop > 1) text(mc, Math.max(0, r0 - 1), "<!>", tone, ty - 0.01);
         if (Math.abs(midCol - S.cols / 2) < spanCols / 2 + 1 && (!aimed || ty < aimed.d)) {
           aimed = { d: ty, col: Math.round(midCol), row: Math.max(0, r0 - 2), e };
         }
@@ -1018,87 +1020,154 @@
   }
 
   // ------------------------------------------------------------------ arma
-  // AK-47 em view model. Definida em coordenadas da própria arma:
-  //   u = posição ao longo do eixo do cano, 0 (boca) a 100 (soleira)
-  //   v = deslocamento perpendicular, em LINHAS
-  // As medidas saem das proporções reais: receptor 10% do comprimento total,
-  // carregador descendo ~22%, conjunto inteiro ~29%. E como a célula é 1.45x
-  // mais alta que larga, toda altura já entra dividida por isso — foi o erro
-  // que fez as duas primeiras tentativas saírem com o dobro da altura.
-  const STEEL = 0, WOOD = 1, EDGE = 2, DARK = 3;
-  //        [u0,  u1,   v0,   v1,  material]
-  const AK = [
-    [0, 6, -2.0, 2.0, STEEL],       // freio de boca
-    [5, 8, -5.0, -1.0, STEEL],      // massa de mira
-    [6, 30, -1.0, 0.6, STEEL],      // cano
-    [9, 13, -4.5, -1.0, STEEL],     // bloco de gás
-    [12, 34, -4.0, -2.6, STEEL],    // tubo de gás
-    [20, 38, -4.0, 2.0, WOOD],      // guarda-mão
-    [38, 62, -4.0, 2.0, STEEL],     // receptor
-    [38, 60, -5.4, -4.0, EDGE],     // tampa da culatra
-    [40, 44, -6.6, -5.4, STEEL],    // alça de mira
-    [44, 54, 2.0, 6.0, STEEL],      // carregador: três blocos que AVANÇAM
-    [42, 52, 6.0, 10.0, STEEL],     //   (u menor) enquanto descem — a curva
-    [40, 50, 10.0, 13.0, STEEL],    //   banana é a assinatura da AK
-    [59, 69, 2.0, 11.0, WOOD],      // punho
-    [62, 72, -3.5, 0.5, STEEL],     // pescoço da coronha
-    [70, 92, -4.0, 2.5, WOOD],      // coronha
-    [90, 100, -5.5, 4.0, WOOD],     // soleira
+  // A AK é um MODELO 3D DE CAIXAS, não uma silhueta recortada. Cada caixa tem
+  // as faces projetadas e sombreadas pela própria normal, então você vê a
+  // lateral E o topo ao mesmo tempo — é esse par de faces, e não o contorno,
+  // que faz o olho ler volume. Silhueta chapada sempre vai parecer adesivo,
+  // por mais detalhe que tenha.
+  //
+  // Espaço do modelo: x corre do cano (0) à soleira (0.62), y é pra cima,
+  // z é a largura. Medidas vêm das proporções reais da arma.
+  const STEEL = 0, WOOD = 1, DARKMETAL = 2;
+  const AK3 = [
+    //  x0     x1     y0      y1      z0      z1     material
+    [0.000, 0.035, -0.013, 0.013, -0.013, 0.013, DARKMETAL], // freio de boca
+    [0.030, 0.050,  0.010, 0.046, -0.008, 0.008, STEEL],     // massa de mira
+    [0.030, 0.245, -0.010, 0.024, -0.010, 0.010, STEEL],     // cano (encosta no tubo)
+    [0.055, 0.088,  0.006, 0.042, -0.013, 0.013, STEEL],     // bloco de gás
+    [0.072, 0.245,  0.022, 0.039, -0.011, 0.011, STEEL],     // tubo de gás
+    [0.130, 0.262, -0.019, 0.039, -0.021, 0.021, WOOD],      // guarda-mão
+    [0.262, 0.442, -0.031, 0.035, -0.023, 0.023, STEEL],     // receptor
+    [0.262, 0.432,  0.035, 0.047, -0.021, 0.021, DARKMETAL], // tampa da culatra
+    [0.282, 0.302,  0.047, 0.061, -0.008, 0.008, STEEL],     // alça de mira
+    [0.300, 0.362, -0.086, -0.031, -0.014, 0.014, DARKMETAL],// carregador (topo)
+    [0.284, 0.346, -0.137, -0.086, -0.014, 0.014, DARKMETAL],// carregador (curva)
+    [0.440, 0.502, -0.116, -0.031, -0.019, 0.019, WOOD],     // punho
+    [0.440, 0.508, -0.011, 0.031, -0.019, 0.019, STEEL],     // pescoço
+    [0.500, 0.600, -0.031, 0.037, -0.023, 0.023, WOOD],      // coronha
+    [0.596, 0.620, -0.046, 0.046, -0.025, 0.025, DARKMETAL], // soleira
   ];
-  const AK_TONE = [P.s2, P.s5, P.s3, P.s0];
+  const AK_BASE = [P.s4, P.g0, P.s2];   // STEEL, WOOD, DARKMETAL
+
+  const norm = (x, y, z) => {
+    const l = Math.hypot(x, y, z) || 1;
+    return { x: x / l, y: y / l, z: z / l };
+  };
+  const LIGHT = norm(-0.45, 0.80, -0.40);   // vem de cima, da frente-esquerda
+
+  // Faces do cubo: índices dos 4 cantos + normal local
+  const CORNERS = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+  const FACES = [
+    { v: [0, 3, 2, 1], n: [0, 0, -1] }, { v: [4, 5, 6, 7], n: [0, 0, 1] },
+    { v: [0, 4, 7, 3], n: [-1, 0, 0] }, { v: [1, 2, 6, 5], n: [1, 0, 0] },
+    { v: [3, 7, 6, 2], n: [0, 1, 0] },  { v: [0, 1, 5, 4], n: [0, -1, 0] },
+  ];
+
+  /** Preenche um quadrilátero convexo projetado, coluna a coluna. */
+  function fillQuad(q, tone) {
+    let minX = Infinity, maxX = -Infinity;
+    for (const v of q) { if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x; }
+    const c0 = Math.max(0, Math.floor(minX)), c1 = Math.min(S.cols - 1, Math.ceil(maxX));
+    for (let c = c0; c <= c1; c++) {
+      const px = c + 0.5;
+      let lo = Infinity, hi = -Infinity, zLo = 0, zHi = 0;
+      for (let i = 0; i < 4; i++) {
+        const a = q[i], b = q[(i + 1) % 4];
+        if ((a.x <= px && b.x > px) || (b.x <= px && a.x > px)) {
+          const t = (px - a.x) / (b.x - a.x);
+          const y = a.y + (b.y - a.y) * t;
+          const z = a.z + (b.z - a.z) * t;
+          if (y < lo) { lo = y; zLo = z; }
+          if (y > hi) { hi = y; zHi = z; }
+        }
+      }
+      if (lo === Infinity) continue;
+      // cobre de fora pra dentro: arredondar pra dentro deixa a linha
+      // parcialmente coberta pro mundo, e sobra uma costura na silhueta
+      const r0 = Math.max(0, Math.floor(lo)), r1 = Math.min(S.rows - 1, Math.ceil(hi));
+      const span = Math.max(1, r1 - r0);
+      for (let r = r0; r <= r1; r++) {
+        const z = zLo + ((zHi - zLo) * (r - r0)) / span;
+        put(c, r, SOLID, tone, Z.gun + z * 0.001);
+      }
+    }
+  }
 
   function renderGun() {
-    const kick = player.kick * 2.4;
-    const sway = Math.sin(player.bob * 9) * 1.8;
-    const drop = player.slideT > 0 ? 6 : 0;
-    const len = S.cols * 0.36;               // comprimento na tela
-    const ux = len / 100;
-    const tilt = 0.2;                        // linhas por unidade de u
-    const ax = S.cols * 0.40 + sway;         // boca perto da mira
-    const ay = S.rows * 0.54 + kick + drop;
-    const dim = player.reloadT > 0 ? 1 : 0;
-    // encurtamento: a ponta longe afina, a coronha perto engrossa
-    const fore = (u) => 0.8 + u * 0.004;
+    const kick = player.kick;
+    const sway = Math.sin(player.bob * 9);
+    const drop = player.slideT > 0 ? 0.05 : 0;
+    const reloadDip = player.reloadT > 0 ? Math.sin((player.reloadT / CFG.reload) * Math.PI) * 0.06 : 0;
 
-    for (const [u0, u1, v0, v1, kind] of AK) {
-      const base = AK_TONE[kind];
-      const steps = Math.max(2, Math.ceil((u1 - u0) * ux * 1.6));
-      for (let i = 0; i <= steps; i++) {
-        const u = u0 + ((u1 - u0) * i) / steps;
-        const f = fore(u);
-        const c = Math.round(ax + u * ux);
-        const cy = ay + u * tilt;
-        const r0 = Math.round(cy + v0 * f);
-        const r1 = Math.round(cy + v1 * f);
-        const tone = Math.max(P.s0, base - (u < 30 ? 1 : 0) - dim);
-        for (let r = r0; r <= r1; r++) {
-          const shade = r === r0 ? Math.min(P.s5, tone + 2)
-                      : r === r1 ? Math.max(P.s0, tone - 2)
-                      : tone;
-          put(c, r, SOLID, shade, Z.gun + u * 0.00001);
-        }
+    // Posicionamento resolvido DE TRÁS PRA FRENTE: eu digo onde a boca e a
+    // soleira devem cair na tela e converto de volta pra espaço de câmera.
+    // Tentar adivinhar o vetor da arma direto põe ela no meio da tela.
+    const axis = norm(0.363, -0.175 + kick * 0.08, -0.600);   // boca -> soleira
+    let up = norm(0.10, 0.95, -0.28);
+    const right = norm(axis.y * up.z - axis.z * up.y,
+                       axis.z * up.x - axis.x * up.z,
+                       axis.x * up.y - axis.y * up.x);
+    up = norm(right.y * axis.z - right.z * axis.y,   // reortogonaliza
+              right.z * axis.x - right.x * axis.z,
+              right.x * axis.y - right.y * axis.x);
+    const org = {
+      x: -0.044 + sway * 0.007,
+      y: -0.172 - kick * 0.05 - drop - reloadDip,
+      z: 1.45 - kick * 0.05,
+    };
+
+    const toCam = (px, py, pz) => ({
+      x: org.x + axis.x * px + up.x * py + right.x * pz,
+      y: org.y + axis.y * px + up.y * py + right.y * pz,
+      z: org.z + axis.z * px + up.z * py + right.z * pz,
+    });
+    const toScreen = (p) => ({
+      x: S.cols / 2 + (p.x / p.z) * S.hProj,
+      y: S.rows / 2 - (p.y / p.z) * S.vProj,
+      z: p.z,
+    });
+    const dim = player.reloadT > 0 ? 1 : 0;
+
+    for (const [x0, x1, y0, y1, z0, z1, mat] of AK3) {
+      const pts = CORNERS.map(([i, j, k]) =>
+        toCam(i ? x1 : x0, j ? y1 : y0, k ? z1 : z0));
+      const scr = pts.map(toScreen);
+
+      for (const f of FACES) {
+        // normal da face no espaço da câmera
+        const n = norm(
+          axis.x * f.n[0] + up.x * f.n[1] + right.x * f.n[2],
+          axis.y * f.n[0] + up.y * f.n[1] + right.y * f.n[2],
+          axis.z * f.n[0] + up.z * f.n[1] + right.z * f.n[2]);
+        const c = pts[f.v[0]];
+        // face só é visível se a normal aponta de volta pra câmera
+        if (n.x * c.x + n.y * c.y + n.z * c.z >= 0) continue;
+
+        // luz difusa chapada: topo claro, lateral médio, base escuro. É a
+        // diferença ENTRE faces que constrói o volume.
+        const lam = n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z;
+        const tone = Math.max(P.s1, Math.min(P.g1,
+          AK_BASE[mat] + (lam > 0.55 ? 2 : lam > 0.1 ? 1 : lam > -0.3 ? 0 : -1) - dim));
+
+        // Preenchimento por VARREDURA, não por passo: amostrar ao longo das
+        // arestas deixa buraco em quad diagonal e o mundo aparece por dentro
+        // da arma. Varredura por coluna cobre todas as células, sempre.
+        const q = f.v.map((i) => scr[i]);
+        fillQuad(q, tone);
       }
     }
 
-    const at = (u, v) => ({
-      c: Math.round(ax + u * ux),
-      r: Math.round(ay + u * tilt + v * fore(u)),
-    });
-    // ventilação do guarda-mão
-    for (let u = 22; u <= 36; u += 3) {
-      const q = at(u, -2.6);
-      put(q.c, q.r, 61 /* = */, P.s7, Z.gunDetail);
-    }
-    // marca esmeralda no receptor: o acento do jogo também está na sua arma
-    for (let u = 42; u <= 58; u += 5) {
-      const q = at(u, -1.0);
-      put(q.c, q.r, 46 /* . */, P.ok2, Z.gunDetail);
+    // marca esmeralda no receptor e clarão na boca
+    const mark = toScreen(toCam(0.36, 0.0, 0.024));
+    for (let i = -3; i <= 3; i += 2) {
+      put(Math.round(mark.x) + i, Math.round(mark.y), 46 /* . */, P.ok2, Z.gunDetail);
     }
     if (player.kick > 0.6) {
-      const q = at(-4, 0);
-      text(q.c - 1, q.r - 1, "\\", P.ink, Z.muzzle);
-      text(q.c - 2, q.r, "-", P.ink, Z.muzzle);
-      text(q.c - 1, q.r + 1, "/", P.ink, Z.muzzle);
+      const m = toScreen(toCam(-0.03, 0, 0));
+      const c = Math.round(m.x), r = Math.round(m.y);
+      text(c - 1, r - 1, "\\", P.ink, Z.muzzle);
+      text(c - 2, r, "-", P.ink, Z.muzzle);
+      text(c - 1, r + 1, "/", P.ink, Z.muzzle);
     }
   }
 

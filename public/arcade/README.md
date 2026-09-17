@@ -80,6 +80,23 @@ E uma regra de nível: toda plataforma alta precisa de escada **dos dois lados**
 1.52 de uma vez é intransponível com `stepUp` de 0.42, e um desnível desses vira
 parede invisível que ilha metade do mapa.
 
+## A arma é 3D de verdade
+
+Silhueta chapada sempre parece adesivo, por mais detalhe que tenha. O que faz o
+olho ler volume é **ver duas faces ao mesmo tempo** com iluminação diferente.
+
+Então a AK é um modelo de 15 caixas em espaço próprio (x do cano à soleira, y
+pra cima, z na largura), com medidas tiradas das proporções reais. Cada caixa
+tem as 6 faces projetadas, as viradas pra trás descartadas, e a cor de cada face
+sai da normal contra uma luz fixa — topo claro, lateral médio, base escuro. O
+preenchimento é por varredura de coluna, não por amostragem ao longo das arestas
+(amostrar deixa buraco em quad diagonal e o mundo aparece por dentro da arma).
+
+O posicionamento é resolvido de trás pra frente: eu digo onde a boca e a soleira
+devem cair na tela e converto de volta pra espaço de câmera. Tentar adivinhar o
+vetor da arma direto põe ela no meio da tela — foi o que aconteceu na primeira
+tentativa.
+
 ## Onde mexer
 
 | Quero | Símbolo |
@@ -91,11 +108,10 @@ parede invisível que ilha metade do mapa.
 | Novo tipo de hostil | `TYPES` + arte em `ART` |
 | Composição das ondas | `startWave()` |
 | Nome das zonas do HUD | `ZONES` |
-| Silhueta da arma | `AK` (eixo do cano × deslocamento, em proporção real) |
+| Modelo da arma | `AK3` (caixas 3D em proporção real) + `fillQuad` |
 | Efeitos sonoros | `sfx()` — WebAudio, sem asset |
 
 ## Pendências conhecidas
 
 - Sem suporte a touch: precisa de mouse e teclado.
 - Sem recorde persistente (dá pra plugar `localStorage` em `gameOver()`).
-- A arma é uma silhueta de blocos: lê como AK, sem detalhe fino de perto.
