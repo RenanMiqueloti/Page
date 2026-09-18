@@ -1043,7 +1043,7 @@
     [P.s2, P.s3, P.s5, P.g0],    // DARKMETAL (carregador precisa LER:
                                  //  escuro demais some no fundo escuro)
   ];
-  const AK_SCALE = 1.25;
+  const AK_SCALE = 1.20;
   const AK3 = [
     //  x0     x1     y0      y1      z0      z1     material
     [0.000, 0.030, -0.016, 0.016, -0.016, 0.016, DARKMETAL], // freio de boca
@@ -1123,7 +1123,7 @@
     // Eixo quase paralelo à visão: a boca cai junto da mira e o cano
     // converge pro centro da tela, que é onde o tiro sai. Arma apontando
     // pra um canto qualquer denuncia que é adesivo.
-    const axis = norm(0.426, -0.374 + kick * 0.10, -0.829);   // boca -> soleira
+    const axis = norm(0.435, -0.370 + kick * 0.10, -0.817);   // boca -> soleira
     let up = norm(0.10, 0.95, -0.28);
     const right = norm(axis.y * up.z - axis.z * up.y,
                        axis.z * up.x - axis.x * up.z,
@@ -1131,10 +1131,13 @@
     up = norm(right.y * axis.z - right.z * axis.y,   // reortogonaliza
               right.z * axis.x - right.x * axis.z,
               right.x * axis.y - right.y * axis.x);
+    // Recuada: a boca fica bem abaixo e à direita da mira, não colada nela.
+    // Arma encostando no centro rouba a leitura do alvo justamente na hora em
+    // que você precisa dela.
     const org = {
-      x: -0.058 + sway * 0.006,
-      y: -0.070 - kick * 0.045 - drop - reloadDip,
-      z: 1.60 - kick * 0.05,
+      x: 0.138 + sway * 0.006,
+      y: -0.225 - kick * 0.045 - drop - reloadDip,
+      z: 1.90 - kick * 0.05,
     };
 
     const S_ = AK_SCALE;
