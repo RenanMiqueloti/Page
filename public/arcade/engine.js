@@ -35,6 +35,7 @@
     speedSprint: 5.6,
     speedSlide: 7.8,
     slideTime: 0.45,
+    slideCooldown: 0.9,
     sens: 0.0015,
     hpMax: 100,
     regenDelay: 2.5,
@@ -258,7 +259,7 @@
   const canvas = document.getElementById("screen");
   const ctx = canvas.getContext("2d", { alpha: false });
   const S = { cols: 0, rows: 0, charW: 0, charH: 0, hProj: 0, vProj: 0 };
-  let chars, pal, depth;
+  let chars, pal, depth, cover;
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
@@ -276,6 +277,7 @@
     chars = new Uint8Array(S.cols * S.rows);
     pal = new Uint8Array(S.cols * S.rows);
     depth = new Float32Array(S.cols * S.rows);
+    cover = new Uint8Array(S.cols * S.rows);   // 0-255: quanto da célula a forma ocupa
 
     // corpo da fonte calibrado pelo avanço real do glifo
     const FONT = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
@@ -287,13 +289,15 @@
   window.addEventListener("resize", resize);
   document.fonts?.ready?.then(resize).catch(() => {});
 
-  function clear() { chars.fill(0); pal.fill(0); depth.fill(Infinity); }
+  function clear() { chars.fill(0); pal.fill(0); depth.fill(Infinity); cover.fill(255); }
 
-  function put(c, r, code, p, d) {
+  /** `a` é cobertura sub-célula (0-255). É o que suaviza a borda: sem isso
+   *  toda diagonal vira escada dura de célula inteira. */
+  function put(c, r, code, p, d, a = 255) {
     if (c < 0 || r < 0 || c >= S.cols || r >= S.rows) return;
     const i = r * S.cols + c;
     if (d >= depth[i]) return;
-    chars[i] = code; pal[i] = p; depth[i] = d;
+    chars[i] = code; pal[i] = p; depth[i] = d; cover[i] = a;
   }
 
   function text(c, r, str, p, d = Z.popup) {
@@ -312,14 +316,20 @@
     for (let r = 0; r < S.rows; r++) {
       const base = r * S.cols;
       const y = r * S.charH;
-      let runStart = -1, runPal = -1, runSolid = false;
+      let runStart = -1, runPal = -1, runSolid = false, runCov = 255;
+      // Arredondar as DUAS bordas pro mesmo pixel faz runs vizinhos se
+      // encostarem exatamente. A folga de +1px que estava aqui fazia todo
+      // retângulo invadir o vizinho, e sobrava franja em cada aresta.
+      const yA = Math.round(r * S.charH), yB = Math.round((r + 1) * S.charH);
 
       const close = (end) => {
         if (runStart < 0) return;
         ctx.fillStyle = PALETTE[runPal];
         if (runSolid) {
-          // +1px de folga evita costura entre colunas em dpr fracionário
-          ctx.fillRect(runStart * S.charW, y, (end - runStart) * S.charW + 1, S.charH + 1);
+          const xA = Math.round(runStart * S.charW), xB = Math.round(end * S.charW);
+          if (runCov < 255) ctx.globalAlpha = runCov / 255;
+          ctx.fillRect(xA, yA, xB - xA, yB - yA);
+          if (runCov < 255) ctx.globalAlpha = 1;
         } else {
           ctx.fillText(buf.join(""), runStart * S.charW, y);
         }
@@ -330,11 +340,12 @@
         const code = c < S.cols ? chars[base + c] : 0;
         const p = c < S.cols ? pal[base + c] : -1;
         const solid = code === SOLID;
+        const cv = solid && c < S.cols ? cover[base + c] : 255;
         const empty = code === 0;
 
-        if (runStart >= 0 && (empty || p !== runPal || solid !== runSolid)) close(c);
+        if (runStart >= 0 && (empty || p !== runPal || solid !== runSolid || cv !== runCov)) close(c);
         if (!empty) {
-          if (runStart < 0) { runStart = c; runPal = p; runSolid = solid; }
+          if (runStart < 0) { runStart = c; runPal = p; runSolid = solid; runCov = cv; }
           if (!solid) buf.push(String.fromCharCode(code));
         }
       }
@@ -440,6 +451,12 @@
           const hitU = side ? cam.x + rayX * t : cam.y + rayY * t;
           const tv = t / vProj;
 
+          // uma linha parcial ACIMA do lábio suaviza o recorte contra o céu,
+          // que é a borda mais visível da cena inteira
+          if (capOn && r0 - 1 >= 0 && r0 - 1 <= yBot) {
+            const frac = r0 - yTop;
+            if (frac > 0.08) put(c, r0 - 1, SOLID, lip, t, Math.round(Math.min(1, frac) * 255));
+          }
           for (let r = r1; r >= r0; r--) {
             if (r === r0 && capOn) { put(c, r, SOLID, lip, t); continue; }
             const worldZ = eyeZ + (horizon - r) * tv;
@@ -568,7 +585,7 @@
   const player = {
     x: start.x, y: start.y, z: 0, vz: 0, yaw: -Math.PI / 2, pitch: 0,
     hp: CFG.hpMax, ammo: CFG.mag, reserve: 150,
-    fireCd: 0, reloadT: 0, slideT: 0, grounded: true,
+    fireCd: 0, reloadT: 0, slideT: 0, slideCd: 0, slideBoost: 1, slideLatch: false, grounded: true,
     lastHit: -99, bob: 0, kick: 0, eyeZ: 0,
   };
   const keys = Object.create(null);
@@ -611,14 +628,26 @@
     if (len > 0) { wx /= len; wy /= len; }
 
     const sprint = (keys.ShiftLeft || keys.ShiftRight) && fwd > 0 && player.slideT <= 0;
-    if ((keys.ControlLeft || keys.ControlRight || keys.KeyC) && sprint &&
-        player.grounded && player.slideT <= 0 && len > 0) {
-      player.slideT = CFG.slideTime; sfx("slide");
+
+    // C sozinho desliza, bastando estar se movendo no chão. Exigir sprint
+    // junto contradizia o HUD, que anuncia só [C] — a tecla simplesmente não
+    // respondia. Sprint agora rende um deslize mais longo, não é pré-requisito.
+    // Dispara no TOQUE, não enquanto segura: segurar a tecla encadeava um
+    // deslize a cada cooldown sozinho.
+    const wantSlide = keys.ControlLeft || keys.ControlRight || keys.KeyC;
+    const pressedSlide = wantSlide && !player.slideLatch;
+    player.slideLatch = wantSlide;
+    if (pressedSlide && player.slideT <= 0 && player.slideCd <= 0 && player.grounded && len > 0) {
+      player.slideT = CFG.slideTime;
+      player.slideCd = CFG.slideCooldown;   // sem isso, segurar C desliza pra sempre
+      player.slideBoost = sprint ? 1 : 0.82;
+      sfx("slide");
     }
     if (player.slideT > 0) player.slideT -= dt;
+    if (player.slideCd > 0) player.slideCd -= dt;
 
     let speed = CFG.speedWalk;
-    if (player.slideT > 0) speed = CFG.speedSlide * (0.55 + (player.slideT / CFG.slideTime) * 0.45);
+    if (player.slideT > 0) speed = CFG.speedSlide * player.slideBoost * (0.55 + (player.slideT / CFG.slideTime) * 0.45);
     else if (sprint) speed = CFG.speedSprint;
     if (!player.grounded) speed *= 0.92;
 
@@ -930,7 +959,12 @@
       s.x += s.vx * dt; s.y += s.vy * dt; s.z += s.vz * dt;
       if (heightAt(s.x, s.y) > s.z || s.z < 0) s.life = 0;
       const dx = s.x - player.x, dy = s.y - player.y;
-      if (dx * dx + dy * dy < 0.22 && Math.abs(s.z - (player.z + 0.5)) < 0.8) { hurt(s.dmg); s.life = 0; }
+      // A caixa de colisão acompanha a POSTURA: deslizando você passa por baixo
+      // do tiro. Era altura fixa, então agachar era puro efeito visual — o
+      // deslize não tinha uso tático nenhum.
+      const torso = player.z + (player.slideT > 0 ? 0.20 : 0.55);
+      const half = player.slideT > 0 ? 0.32 : 0.78;
+      if (dx * dx + dy * dy < 0.22 && Math.abs(s.z - torso) < half) { hurt(s.dmg); s.life = 0; }
     }
     game.shots = game.shots.filter((s) => s.life > 0);
   }
@@ -1099,14 +1133,18 @@
           if (y > hi) { hi = y; zHi = z; }
         }
       }
-      if (lo === Infinity) continue;
-      // cobre de fora pra dentro: arredondar pra dentro deixa a linha
-      // parcialmente coberta pro mundo, e sobra uma costura na silhueta
-      const r0 = Math.max(0, Math.floor(lo)), r1 = Math.min(S.rows - 1, Math.ceil(hi));
-      const span = Math.max(1, r1 - r0);
-      for (let r = r0; r <= r1; r++) {
-        const z = zLo + ((zHi - zLo) * (r - r0)) / span;
-        put(c, r, SOLID, tone, Z.gun + z * 0.001);
+      if (lo === Infinity || hi <= lo) continue;
+      // As linhas do miolo vão cheias; as duas das pontas vão com a fração que
+      // a forma realmente ocupa. É isso que tira a escada das diagonais.
+      const rTop = Math.floor(lo), rBot = Math.floor(hi);
+      const span = Math.max(1e-6, hi - lo);
+      const zAt = (r) => Z.gun + (zLo + ((zHi - zLo) * (r - lo)) / span) * 0.001;
+      if (rTop === rBot) {
+        put(c, rTop, SOLID, tone, zAt(rTop), Math.round((hi - lo) * 255));
+      } else {
+        put(c, rTop, SOLID, tone, zAt(rTop), Math.round((rTop + 1 - lo) * 255));
+        for (let r = rTop + 1; r < rBot; r++) put(c, r, SOLID, tone, zAt(r));
+        put(c, rBot, SOLID, tone, zAt(rBot), Math.round((hi - rBot) * 255));
       }
     }
   }
@@ -1257,6 +1295,7 @@
     const status = player.reloadT > 0 ? "RECARREGANDO"
                  : player.ammo === 0 ? "[R] RECARREGAR"
                  : player.slideT > 0 ? "DESLIZANDO"
+                 : player.slideCd > 0 ? "DESLIZE EM RECARGA"
                  : player.grounded ? "[C] DESLIZE PRONTO" : "NO AR";
     setHud("Status", status);
     showHud("Toast", game.mode === "play" && !document.pointerLockElement);
@@ -1346,7 +1385,8 @@
     player.z = floorUnder(player.x, player.y); player.vz = 0;
     player.yaw = -Math.PI / 2; player.pitch = 0;
     player.hp = CFG.hpMax; player.ammo = CFG.mag; player.reserve = 150;
-    player.reloadT = 0; player.fireCd = 0; player.slideT = 0; player.lastHit = -99;
+    player.reloadT = 0; player.fireCd = 0; player.slideT = 0; player.slideCd = 0;
+    player.slideBoost = 1; player.slideLatch = false; player.lastHit = -99;
     Object.assign(game, {
       t: 0, wave: 0, score: 0, combo: 0, enemies: [], shots: [], popups: [],
       banner: null, queue: [], nextSpawn: 0, gap: 3.5, shake: 0, hitMark: 0,
