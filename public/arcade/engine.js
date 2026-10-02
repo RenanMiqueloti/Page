@@ -24,7 +24,7 @@
     cols: 240,             // largura alvo da grade
     charAspect: 1.45,      // altura/largura da célula
     fov: (72 * Math.PI) / 180,
-    far: 46,
+    far: 72,
     eye: 0.62,
     eyeSlide: 0.30,
     radius: 0.26,
@@ -36,18 +36,13 @@
     speedSlide: 7.8,
     slideTime: 0.45,
     slideCooldown: 0.9,
+    swapTime: 0.35,
     sens: 0.0015,
     hpMax: 100,
     regenDelay: 2.5,
     regenRate: 25,
-    mag: 30,
-    reload: 1.5,
-    fireDelay: 0.093,
-    dmg: 26,
     headMult: 2.8,
     headZone: 0.72,
-    spread: 0.010,
-    spreadMove: 0.030,
   };
 
   // --------------------------------------------------------------- paleta
@@ -270,15 +265,25 @@
   function resize() {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    canvas.height = Math.max(1, Math.round(rect.height * dpr));
 
-    S.cols = Math.max(80, Math.min(CFG.cols, Math.round(rect.width / 5.4)));
-    S.charW = canvas.width / S.cols;
-    S.charH = S.charW * CFG.charAspect;
-    S.rows = Math.max(30, Math.floor(canvas.height / S.charH));
+    // Célula com tamanho INTEIRO em pixels de dispositivo, e buffer do canvas
+    // múltiplo exato dela. Com célula fracionária todo retângulo e todo glifo
+    // caem em meio pixel, o navegador reamostra a tela inteira e a imagem sai
+    // lavada — era a causa do "borrado".
+    const wantCols = Math.max(80, Math.min(CFG.cols, Math.round(rect.width / 5.4)));
+    const cw = Math.max(3, Math.round((rect.width * dpr) / wantCols));
+    const ch = Math.max(4, Math.round(cw * CFG.charAspect));
+    S.charW = cw;
+    S.charH = ch;
+    S.cols = Math.max(40, Math.floor((rect.width * dpr) / cw));
+    S.rows = Math.max(20, Math.floor((rect.height * dpr) / ch));
+    canvas.width = S.cols * cw;
+    canvas.height = S.rows * ch;
+    // CSS casando com o buffer: mapeamento 1:1, sem reamostragem
+    canvas.style.width = `${canvas.width / dpr}px`;
+    canvas.style.height = `${canvas.height / dpr}px`;
     S.hProj = S.cols / 2 / Math.tan(CFG.fov / 2);
-    S.vProj = S.hProj / CFG.charAspect;
+    S.vProj = (S.hProj * S.charW) / S.charH;   // razão real da célula, já inteira
 
     chars = new Uint8Array(S.cols * S.rows);
     pal = new Uint8Array(S.cols * S.rows);
@@ -372,18 +377,40 @@
   const hash = (a, b) => (((a * 73856093) ^ (b * 19349663)) >>> 0) % 997;
   const HEX = ["0x", "7f", "a3", "ff", "e1", "0b", "c4", "9d", "3e", "5a"];
 
-  /** Degraus de escurecimento por distância — grossos de propósito: gradiente
-   *  fino vira ruído, degrau largo lê como plano de profundidade. */
+  // NÉVOA. A regra que vale: superfície distante converge pra cor do HORIZONTE,
+  // não pro preto. Convergindo pro preto, tudo some no fundo depois de certa
+  // distância; convergindo pro horizonte, a geometria "sai da névoa" e continua
+  // legível até o fim do alcance. A rampa é gerada no boot — um índice de
+  // paleta por (tom, nível) — o que mantém o buffer em Uint8Array e dá degradê
+  // liso no lugar dos quatro degraus grossos de antes.
+  const FOG_STEPS = 12;
+  const FOG_RGB = [0x22, 0x1c, 0x38];
+  const FOGGED = [];
+  (() => {
+    const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const base = PALETTE.length;
+    for (let i = 0; i < base; i++) {
+      const c = hex(PALETTE[i]);
+      const row = [i];
+      for (let l = 1; l < FOG_STEPS; l++) {
+        const k = (l / (FOG_STEPS - 1)) ** 0.85 * 0.92;
+        const m = c.map((v, j) => Math.round(v + (FOG_RGB[j] - v) * k));
+        row.push(PALETTE.length);
+        PALETTE.push(`#${m.map((v) => v.toString(16).padStart(2, "0")).join("")}`);
+      }
+      FOGGED.push(row);
+    }
+  })();
+  /** Tom `base` como ele aparece a `dist` de distância. */
+  const fogged = (base, dist) =>
+    FOGGED[base][Math.max(0, Math.min(FOG_STEPS - 1, (dist / CFG.far) * (FOG_STEPS - 1))) | 0];
+
   // Luz direcional fixa, vinda do noroeste. O raycaster só sabe QUAL EIXO ele
   // cruzou; combinando com o sentido do passo dá pra saber pra onde a face
   // aponta — e aí cada orientação ganha seu valor. Sombrear só pelo eixo
   // deixava a parede rasante mais clara que a parede de frente.
   //            oeste  leste  norte  sul
   const FACE = [2, 0, 1, 0];
-
-  function fade(dist) {
-    return dist < 11 ? 0 : dist < 20 ? 1 : dist < 30 ? 2 : dist < 40 ? 3 : 4;
-  }
 
   function renderWorld(cam) {
     const tanF = Math.tan(CFG.fov / 2);
@@ -429,7 +456,6 @@
             const dist = (dz * vProj) / (horizon - r);
             if (dist <= 0 || dist > CFG.far) continue;
             const wx = cam.x + rayX * dist, wy = cam.y + rayY * dist;
-            const f = fade(dist);
             if (raised) {
               // Plataforma: chapada e escura. O ciano marca só a BORDA REAL —
               // onde a célula vizinha tem outra altura. Marcar toda divisa de
@@ -443,7 +469,7 @@
               const edge =
                 (fx < thr && diff(-1, 0)) || (fx > 1 - thr && diff(1, 0)) ||
                 (fy < thr && diff(0, -1)) || (fy > 1 - thr && diff(0, 1));
-              put(c, r, SOLID, edge ? Math.max(P.ok0, P.ok1 - f) : Math.max(P.s0, P.s1 - (f >> 1)), dist);
+              put(c, r, SOLID, fogged(edge ? P.ok1 : P.s1, dist), dist);
             } else {
               // O pátio PRECISA existir como plano. Desenhado só com nós
               // esparsos, o terço inferior da tela virava vazio preto e a cena
@@ -451,8 +477,7 @@
               const fx = wx - Math.floor(wx), fy = wy - Math.floor(wy);
               const thr = Math.min(0.26, Math.max(0.012, dist * 0.011));
               const line = fx < thr || fy < thr;
-              const ground = Math.max(P.void_, P.s0 - (f >> 1));
-              put(c, r, SOLID, line ? Math.min(P.s2, ground + 1) : ground, dist);
+              put(c, r, SOLID, fogged(line ? P.s1 : P.s0, dist), dist);
             }
           }
           if (r0 <= yBot) yBot = Math.min(yBot, r0 - 1);
@@ -466,7 +491,6 @@
           const yBase = horizon - ((prevH - eyeZ) / t) * vProj;
           const r0 = Math.max(0, Math.ceil(yTop));
           const r1 = Math.min(yBot, Math.floor(yBase));
-          const f = fade(t);
           const walk = nextH < 1.9;                       // dá pra pisar em cima
           // UMA cor por face: é o contraste entre faces que desenha o volume
           // Separação de VALOR por orientação, com dois passos de distância
@@ -475,15 +499,12 @@
           // lia como papelão chapado.
           const facing = side === 0 ? (stepX > 0 ? 0 : 1) : (stepY > 0 ? 2 : 3);
           const baseTone = (walk ? P.s1 : P.s2) + FACE[facing];
-          const tone = Math.max(P.s0, baseTone - f);
           const hitU0 = side ? cam.x + rayX * t : cam.y + rayY * t;
           // Lábio TRACEJADO. Linha cheia numa borda longa vira barra luminosa de
           // ponta a ponta e rouba a cena; tracejado marca a mesma informação
           // ("dá pra subir aqui") sem competir com a arquitetura.
           const dash = (Math.floor(hitU0 * 1.6) & 1) === 0;
-          const lip = walk
-            ? (dash ? (t < 9 ? P.ok1 : P.ok0) : Math.max(P.s1, P.s3 - f))
-            : Math.max(P.s1, P.s5 - f);
+          const lip = fogged(walk ? (dash ? P.ok2 : P.s3) : P.s5, t);
           const capOn = Math.ceil(yTop) >= 0;
           const tv = t / vProj;
 
@@ -500,24 +521,25 @@
             // sombra acumulando na base da face: é o que dá peso e assenta a
             // parede no chão em vez de deixá-la boiando
             const down = (r - r0) / faceH;
-            let shaded = Math.max(P.s0, tone - (down > 0.82 ? 2 : down > 0.6 ? 1 : 0));
+            let shadeIdx = Math.max(P.s0, baseTone - (down > 0.82 ? 2 : down > 0.6 ? 1 : 0));
             // Costuras de painel dão ESCALA ao plano. Sem elas uma parede de
             // 20 células é uma mancha só, e o olho não tem como medir o
             // tamanho nem a distância dela.
-            if (t < 24) {
+            if (t < 34) {
               const fz = worldZ * 1.8 - Math.floor(worldZ * 1.8);
               const fu = hitU0 - Math.floor(hitU0);
-              if (fz < 0.1) shaded = Math.max(P.s0, shaded - 1);          // junta horizontal
-              else if (fu < 0.05 || fu > 0.95) shaded = Math.min(P.s5, shaded + 1);  // montante
+              if (fz < 0.1) shadeIdx = Math.max(P.s0, shadeIdx - 1);          // junta horizontal
+              else if (fu < 0.05 || fu > 0.95) shadeIdx = Math.min(P.s5, shadeIdx + 1);  // montante
             }
+            const shaded = fogged(shadeIdx, t);
             // Fragmento hex como etiqueta de superfície. Quantização grossa
             // fazia eles empilharem em blocos retangulares de ruído.
             // quantização fina: grossa demais, cada etiqueta vira um bloco de
             // ~6x6 células e lê como ruído carimbado na parede
             const mark = hash((hitU0 * 22) | 0, (worldZ * 26) | 0);
-            if (mark < 22 && t < 15 && !side) {
+            if (mark < 22 && t < 20 && !side) {
               const glyph = HEX[mark % HEX.length];
-              put(c, r, glyph.charCodeAt(((hitU0 * 22) | 0) & 1), Math.min(P.s5, shaded + 2), t);
+              put(c, r, glyph.charCodeAt(((hitU0 * 22) | 0) & 1), fogged(Math.min(P.s5, shadeIdx + 2), t), t);
             } else {
               put(c, r, SOLID, shaded, t);
             }
@@ -634,7 +656,8 @@
   // ---------------------------------------------------------------- player
   const player = {
     x: start.x, y: start.y, z: 0, vz: 0, yaw: -Math.PI / 2, pitch: 0,
-    hp: CFG.hpMax, ammo: CFG.mag, reserve: 150,
+    hp: CFG.hpMax, weapon: 2, swapT: 0,
+    mags: [0, 12, 30], reserves: [0, 84, 150],
     fireCd: 0, reloadT: 0, slideT: 0, slideCd: 0, slideBoost: 1, slideLatch: false, grounded: true,
     lastHit: -99, bob: 0, kick: 0, eyeZ: 0,
   };
@@ -726,21 +749,31 @@
     }
 
     player.fireCd -= dt;
+    if (player.swapT > 0) player.swapT -= dt;
+    const w = gun();
     if (player.reloadT > 0) {
       player.reloadT -= dt;
       if (player.reloadT <= 0) {
-        const need = Math.min(CFG.mag - player.ammo, player.reserve);
-        player.ammo += need; player.reserve -= need;
+        const need = Math.min(w.mag - player.mags[player.weapon], player.reserves[player.weapon]);
+        player.mags[player.weapon] += need;
+        player.reserves[player.weapon] -= need;
       }
-    } else if (mouse.down && player.fireCd <= 0) {
-      if (player.ammo > 0) fire(len > 0); else reload();
+    } else if (mouse.down && player.fireCd <= 0 && player.swapT <= 0) {
+      if (w.melee) swing();
+      else if (player.mags[player.weapon] > 0) fire(len > 0);
+      else reload();
     }
     if (keys.KeyR) reload();
+    if (keys.Digit1) swapTo(0);
+    if (keys.Digit2) swapTo(1);
+    if (keys.Digit3) swapTo(2);
   }
 
   function reload() {
-    if (player.reloadT > 0 || player.ammo >= CFG.mag || player.reserve <= 0) return;
-    player.reloadT = CFG.reload;
+    const w = gun();
+    if (w.melee || player.reloadT > 0 || player.swapT > 0) return;
+    if (player.mags[player.weapon] >= w.mag || player.reserves[player.weapon] <= 0) return;
+    player.reloadT = w.reload;
     sfx("reload");
   }
 
@@ -811,21 +844,46 @@
   };
 
   function fire(moving) {
-    player.ammo--;
-    player.fireCd = CFG.fireDelay;
+    const w = gun();
+    player.mags[player.weapon]--;
+    player.fireCd = w.rate;
     player.kick = 1;
-    game.shake = Math.max(game.shake, 0.6);
+    game.shake = Math.max(game.shake, w.melee ? 0.3 : 0.6);
     sfx("shot");
 
-    const spread = (moving ? CFG.spreadMove : CFG.spread) * (player.grounded ? 1 : 1.9);
+    const spread = (moving ? w.spreadMove : w.spread) * (player.grounded ? 1 : 1.9);
     const yaw = player.yaw + (Math.random() - 0.5) * spread * 6;
     const slope = player.pitch / S.vProj + (Math.random() - 0.5) * spread * 6;
     const hit = hitscan(player.x, player.y, player.eyeZ, yaw, slope, CFG.far);
     if (!hit || hit.type === "wall") return;
+    damage(hit.e, w.dmg, hit.z >= hit.e.z + hit.e.h * CFG.headZone);
+  }
 
-    const e = hit.e;
-    const head = hit.z >= e.z + e.h * CFG.headZone;
-    e.hp -= CFG.dmg * (head ? CFG.headMult : 1);
+  /** Golpe corpo a corpo: alcance curto, sem munição, e precisa estar de frente. */
+  function swing() {
+    const w = gun();
+    player.fireCd = w.rate;
+    player.kick = 1;
+    game.shake = Math.max(game.shake, 0.35);
+    sfx("slide");
+
+    const dx = Math.cos(player.yaw), dy = Math.sin(player.yaw);
+    let best = null, bd = 1e9;
+    for (const e of game.enemies) {
+      if (e.dead) continue;
+      const ex = e.x - player.x, ey = e.y - player.y;
+      const d = Math.hypot(ex, ey) || 0.001;
+      if (d > w.range + e.w * 0.5) continue;
+      if ((ex * dx + ey * dy) / d < 0.5) continue;                  // tem que estar à frente
+      if (Math.abs(e.z + e.h * 0.5 - player.eyeZ) > 1.3) continue;  // e na mesma altura
+      if (d < bd) { bd = d; best = e; }
+    }
+    if (!best) return;
+    damage(best, w.dmg, false);
+  }
+
+  function damage(e, amount, head) {
+    e.hp -= amount * (head ? CFG.headMult : 1);
     e.hitFlash = 0.07;
     game.hitMark = 0.12;
     sfx(head ? "head" : "hit");
@@ -836,12 +894,23 @@
     if (e.hp <= 0) kill(e);
   }
 
+  function swapTo(i) {
+    if (i === player.weapon || player.swapT > 0 || game.mode !== "play") return;
+    player.weapon = i;
+    player.swapT = CFG.swapTime;
+    player.reloadT = 0;
+    player.fireCd = Math.max(player.fireCd, CFG.swapTime);
+    sfx("reload");
+  }
+
   function kill(e) {
     e.dead = true;
     game.combo++;
     const pts = e.def.score + Math.min(50, game.combo * 2);
     game.score += pts;
-    player.reserve = Math.min(200, player.reserve + (e.def.boss ? 60 : 10));
+    const refillTo = gun().melee ? 2 : player.weapon;
+    const cap = WEAPONS[refillTo].reserve0 + 40;
+    player.reserves[refillTo] = Math.min(cap, player.reserves[refillTo] + (e.def.boss ? 60 : 10));
     game.popups.push({ x: e.x, y: e.y, z: e.z + e.h * 0.6, txt: `+${pts}`, life: 0.9, pal: P.ok2 });
     sfx(e.def.boss ? "boss" : "kill");
     if (e.def.boss) game.banner = { txt: `${e.name} CONTIDO`, sub: "", life: 3 };
@@ -1117,24 +1186,25 @@
   //
   // Espaço do modelo: x corre do cano (0) à soleira (0.62), y é pra cima,
   // z é a largura. Medidas vêm das proporções reais da arma.
-  const STEEL = 0, WOOD = 1, DARKMETAL = 2;
+  const STEEL = 0, WOOD = 1, DARKMETAL = 2, EDGE = 3;
   // Rampa por MATERIAL, não deslocamento numa rampa só: madeira e metal
   // reagem à luz de forma diferente, e é esse contraste — madeira clara contra
   // metal escuro — que faz alguém reconhecer uma AK antes de contar as peças.
-  const AK_RAMP = [
+  const MAT = [
     [P.s1, P.s3, P.s4, P.g0],    // STEEL
     [P.w0, P.w1, P.w2, P.w3],    // WOOD
-    [P.s2, P.s3, P.s5, P.g0],    // DARKMETAL (carregador precisa LER:
-                                 //  escuro demais some no fundo escuro)
+    [P.s0, P.s1, P.s2, P.s3],    // DARKMETAL
+    [P.s3, P.s5, P.g0, P.g1],    // EDGE (fio de lâmina: mais claro que tudo)
   ];
-  const AK_SCALE = 1.20;
-  const AK3 = [
-    //  x0     x1     y0      y1      z0      z1     material
+
+  // Modelos em espaço da própria arma: x do bico (0) ao fim, y pra cima,
+  // z a largura. Medidas a partir das proporções reais de cada peça.
+  const MODEL_AK = [
     [0.000, 0.030, -0.016, 0.016, -0.016, 0.016, DARKMETAL], // freio de boca
     [0.026, 0.044, -0.011, 0.011, -0.011, 0.011, STEEL],     // ponta do cano
     [0.030, 0.052,  0.014, 0.058, -0.011, 0.011, STEEL],     // massa de mira
     [0.033, 0.049,  0.046, 0.054, -0.014, 0.014, STEEL],     // capa da mira
-    [0.044, 0.250, -0.013, 0.009, -0.013, 0.013, STEEL],     // cano
+    [0.044, 0.250, -0.013, 0.024, -0.013, 0.013, STEEL],     // cano
     [0.060, 0.096,  0.006, 0.046, -0.014, 0.014, STEEL],     // bloco de gás
     [0.078, 0.252,  0.026, 0.045, -0.014, 0.014, STEEL],     // tubo de gás
     [0.096, 0.140, -0.014, 0.000, -0.008, 0.008, DARKMETAL], // haste de limpeza
@@ -1144,12 +1214,60 @@
     [0.286, 0.312,  0.049, 0.064, -0.009, 0.009, STEEL],     // alça de mira
     [0.300, 0.356, -0.082, -0.033, -0.015, 0.015, DARKMETAL],// carregador 1
     [0.288, 0.344, -0.124, -0.082, -0.015, 0.015, DARKMETAL],// carregador 2
-    [0.272, 0.326, -0.158, -0.124, -0.015, 0.015, DARKMETAL],// carregador 3 (curva)
+    [0.272, 0.326, -0.158, -0.124, -0.015, 0.015, DARKMETAL],// carregador 3
     [0.452, 0.516, -0.122, -0.033, -0.020, 0.020, WOOD],     // punho
     [0.448, 0.520, -0.012, 0.034, -0.020, 0.020, STEEL],     // pescoço
     [0.508, 0.606, -0.034, 0.040, -0.024, 0.024, WOOD],      // coronha
     [0.600, 0.626, -0.050, 0.050, -0.026, 0.026, DARKMETAL], // soleira
   ];
+
+  // Pistola: ferrolho em cima, armação embaixo, guarda-mato vazado e punho
+  // inclinado (dois blocos deslocados, já que caixa não gira).
+  const MODEL_PISTOL = [
+    [0.000, 0.020,  0.030, 0.044, -0.008, 0.008, STEEL],     // massa de mira
+    [0.000, 0.190,  0.000, 0.040, -0.017, 0.017, DARKMETAL], // ferrolho
+    [0.012, 0.185,  0.034, 0.040, -0.013, 0.013, STEEL],     // estria do ferrolho
+    [0.150, 0.190,  0.040, 0.052, -0.012, 0.012, DARKMETAL], // alça de mira
+    [0.020, 0.170, -0.016, 0.000, -0.014, 0.014, STEEL],     // armação / cano
+    [0.100, 0.112, -0.050, -0.016, -0.009, 0.009, STEEL],    // frente do guarda-mato
+    [0.100, 0.165, -0.058, -0.048, -0.009, 0.009, STEEL],    // base do guarda-mato
+    [0.120, 0.136, -0.046, -0.020, -0.006, 0.006, DARKMETAL],// gatilho
+    [0.160, 0.215, -0.070, -0.014, -0.016, 0.016, WOOD],     // punho (alto)
+    [0.178, 0.238, -0.125, -0.066, -0.016, 0.016, WOOD],     // punho (baixo)
+    [0.196, 0.244, -0.138, -0.120, -0.017, 0.017, DARKMETAL],// base do carregador
+  ];
+
+  // Faca: lâmina chata (larga em y, fina em z), guarda, cabo e pomo.
+  const MODEL_KNIFE = [
+    [0.000, 0.030, -0.006, 0.010, -0.003, 0.003, EDGE],      // ponta
+    [0.026, 0.150, -0.014, 0.016, -0.004, 0.004, EDGE],      // fio
+    [0.030, 0.150,  0.008, 0.018, -0.005, 0.005, STEEL],     // dorso
+    [0.040, 0.145, -0.004, 0.010, -0.006, 0.006, STEEL],     // vão central
+    [0.150, 0.168, -0.030, 0.032, -0.013, 0.013, DARKMETAL], // guarda
+    [0.168, 0.258, -0.017, 0.017, -0.012, 0.012, WOOD],      // cabo
+    [0.258, 0.282, -0.021, 0.021, -0.015, 0.015, DARKMETAL], // pomo
+  ];
+
+  // Cada arma carrega a própria pose: faca e pistola não se seguram como
+  // fuzil, então posição, eixo e escala vêm junto do modelo.
+  const WEAPONS = [
+    {
+      name: "FACA", melee: true, dmg: 72, rate: 0.42, range: 2.0, headMult: 1.5,
+      model: MODEL_KNIFE, scale: 1.45, kickAmt: 1.6,
+      org: { x: 0.170, y: -0.170, z: 1.32 }, axis: [0.300, -0.520, -0.800],
+    },
+    {
+      name: "PISTOLA", dmg: 34, rate: 0.17, mag: 12, reload: 1.15, reserve0: 84,
+      spread: 0.006, spreadMove: 0.016, model: MODEL_PISTOL, scale: 1.3, kickAmt: 1.35,
+      org: { x: 0.125, y: -0.150, z: 1.58 }, axis: [0.360, -0.330, -0.872],
+    },
+    {
+      name: "AK-47", dmg: 26, rate: 0.093, mag: 30, reload: 1.5, reserve0: 150,
+      spread: 0.010, spreadMove: 0.030, model: MODEL_AK, scale: 1.20, kickAmt: 1,
+      org: { x: 0.138, y: -0.225, z: 1.90 }, axis: [0.435, -0.370, -0.817],
+    },
+  ];
+  const gun = () => WEAPONS[player.weapon];
 
   const norm = (x, y, z) => {
     const l = Math.hypot(x, y, z) || 1;
@@ -1157,7 +1275,7 @@
   };
   const LIGHT = norm(-0.45, 0.80, -0.40);   // vem de cima, da frente-esquerda
 
-  // Faces do cubo: índices dos 4 cantos + normal local
+  // Cantos do cubo e as 6 faces, cada uma com sua normal local.
   const CORNERS = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
   const FACES = [
     { v: [0, 3, 2, 1], n: [0, 0, -1] }, { v: [4, 5, 6, 7], n: [0, 0, 1] },
@@ -1165,7 +1283,9 @@
     { v: [3, 7, 6, 2], n: [0, 1, 0] },  { v: [0, 1, 5, 4], n: [0, -1, 0] },
   ];
 
-  /** Preenche um quadrilátero convexo projetado, coluna a coluna. */
+  /** Preenche um quadrilátero convexo projetado, coluna a coluna. Varredura,
+   *  não amostragem ao longo das arestas: amostrar deixa buraco em quad
+   *  diagonal e o mundo aparece por dentro da arma. */
   function fillQuad(q, tone) {
     let minX = Infinity, maxX = -Infinity;
     for (const v of q) { if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x; }
@@ -1184,8 +1304,8 @@
         }
       }
       if (lo === Infinity || hi <= lo) continue;
-      // As linhas do miolo vão cheias; as duas das pontas vão com a fração que
-      // a forma realmente ocupa. É isso que tira a escada das diagonais.
+      // miolo cheio, pontas com a fração que a forma ocupa: é o que tira a
+      // escada das diagonais
       const rTop = Math.floor(lo), rBot = Math.floor(hi);
       const span = Math.max(1e-6, hi - lo);
       const zAt = (r) => Z.gun + (zLo + ((zHi - zLo) * (r - lo)) / span) * 0.001;
@@ -1200,35 +1320,32 @@
   }
 
   function renderGun() {
-    const kick = player.kick;
+    const w = gun();
+    const kick = player.kick * w.kickAmt;
     const sway = Math.sin(player.bob * 9);
     const drop = player.slideT > 0 ? 0.05 : 0;
-    const reloadDip = player.reloadT > 0 ? Math.sin((player.reloadT / CFG.reload) * Math.PI) * 0.06 : 0;
+    const swapDip = player.swapT > 0 ? Math.sin((player.swapT / CFG.swapTime) * Math.PI) * 0.16 : 0;
+    const reloadDip = player.reloadT > 0 && w.reload
+      ? Math.sin((player.reloadT / w.reload) * Math.PI) * 0.06 : 0;
 
-    // Posicionamento resolvido DE TRÁS PRA FRENTE: eu digo onde a boca e a
-    // soleira devem cair na tela e converto de volta pra espaço de câmera.
-    // Tentar adivinhar o vetor da arma direto põe ela no meio da tela.
-    // Eixo quase paralelo à visão: a boca cai junto da mira e o cano
-    // converge pro centro da tela, que é onde o tiro sai. Arma apontando
-    // pra um canto qualquer denuncia que é adesivo.
-    const axis = norm(0.435, -0.370 + kick * 0.10, -0.817);   // boca -> soleira
+    // Posicionamento resolvido DE TRÁS PRA FRENTE: a pose diz onde o bico e a
+    // base devem cair na tela, convertido de volta pra espaço de câmera.
+    // Adivinhar o vetor direto põe a arma no meio da tela.
+    const axis = norm(w.axis[0], w.axis[1] + kick * 0.10, w.axis[2]);
     let up = norm(0.10, 0.95, -0.28);
     const right = norm(axis.y * up.z - axis.z * up.y,
                        axis.z * up.x - axis.x * up.z,
                        axis.x * up.y - axis.y * up.x);
-    up = norm(right.y * axis.z - right.z * axis.y,   // reortogonaliza
+    up = norm(right.y * axis.z - right.z * axis.y,
               right.z * axis.x - right.x * axis.z,
               right.x * axis.y - right.y * axis.x);
-    // Recuada: a boca fica bem abaixo e à direita da mira, não colada nela.
-    // Arma encostando no centro rouba a leitura do alvo justamente na hora em
-    // que você precisa dela.
     const org = {
-      x: 0.138 + sway * 0.006,
-      y: -0.225 - kick * 0.045 - drop - reloadDip,
-      z: 1.90 - kick * 0.05,
+      x: w.org.x + sway * 0.006,
+      y: w.org.y - kick * 0.045 - drop - reloadDip - swapDip,
+      z: w.org.z - kick * 0.05,
     };
 
-    const S_ = AK_SCALE;
+    const S_ = w.scale;
     const toCam = (px, py, pz) => ({
       x: org.x + (axis.x * px + up.x * py + right.x * pz) * S_,
       y: org.y + (axis.y * px + up.y * py + right.y * pz) * S_,
@@ -1241,42 +1358,38 @@
     });
     const dim = player.reloadT > 0 ? 1 : 0;
 
-    for (const [x0, x1, y0, y1, z0, z1, mat] of AK3) {
-      const pts = CORNERS.map(([i, j, k]) =>
-        toCam(i ? x1 : x0, j ? y1 : y0, k ? z1 : z0));
+    for (const [x0, x1, y0, y1, z0, z1, mat] of w.model) {
+      const pts = CORNERS.map(([i, j, k]) => toCam(i ? x1 : x0, j ? y1 : y0, k ? z1 : z0));
       const scr = pts.map(toScreen);
 
       for (const f of FACES) {
-        // normal da face no espaço da câmera
         const n = norm(
           axis.x * f.n[0] + up.x * f.n[1] + right.x * f.n[2],
           axis.y * f.n[0] + up.y * f.n[1] + right.y * f.n[2],
           axis.z * f.n[0] + up.z * f.n[1] + right.z * f.n[2]);
         const c = pts[f.v[0]];
-        // face só é visível se a normal aponta de volta pra câmera
-        if (n.x * c.x + n.y * c.y + n.z * c.z >= 0) continue;
+        if (n.x * c.x + n.y * c.y + n.z * c.z >= 0) continue;   // face virada pra trás
 
-        // luz difusa chapada: topo claro, lateral médio, base escuro. É a
-        // diferença ENTRE faces que constrói o volume.
         const lam = n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z;
         const lvl = lam > 0.55 ? 3 : lam > 0.1 ? 2 : lam > -0.3 ? 1 : 0;
-        const tone = AK_RAMP[mat][Math.max(0, lvl - dim)];
-
-        // Preenchimento por VARREDURA, não por passo: amostrar ao longo das
-        // arestas deixa buraco em quad diagonal e o mundo aparece por dentro
-        // da arma. Varredura por coluna cobre todas as células, sempre.
-        const q = f.v.map((i) => scr[i]);
-        fillQuad(q, tone);
+        fillQuad(f.v.map((i) => scr[i]), MAT[mat][Math.max(0, lvl - dim)]);
       }
     }
 
-    // marca esmeralda no receptor e clarão na boca
-    const mark = toScreen(toCam(0.36, 0.0, 0.024));
-    for (let i = -3; i <= 3; i += 2) {
+    const at = (px, py, pz) => toScreen(toCam(px, py, pz));
+    if (w.name === "AK-47") {
+      for (let u = 0.57; u <= 0.71; u += 0.035) {
+        const q = at(u * 0.44, 0.03, 0.024);
+        put(Math.round(q.x), Math.round(q.y), 61 /* = */, P.s7, Z.gunDetail);
+      }
+    }
+    // marca esmeralda: o acento do jogo também está na sua arma
+    const mark = at(w.melee ? 0.21 : 0.30, w.melee ? 0.0 : -0.01, 0.02);
+    for (let i = -2; i <= 2; i += 2) {
       put(Math.round(mark.x) + i, Math.round(mark.y), 46 /* . */, P.ok2, Z.gunDetail);
     }
-    if (player.kick > 0.6) {
-      const m = toScreen(toCam(-0.03, 0, 0));
+    if (!w.melee && player.kick > 0.6) {
+      const m = at(-0.03, 0.012, 0);
       const c = Math.round(m.x), r = Math.round(m.y);
       text(c - 1, r - 1, "\\", P.ink, Z.muzzle);
       text(c - 2, r, "-", P.ink, Z.muzzle);
@@ -1303,7 +1416,7 @@
 
   const hud = {};
   for (const id of ["Zone", "Compass", "Wave", "Score", "Hostiles", "Integrity", "IntegrityBar",
-                    "Ammo", "Reserve", "Rounds", "Status", "Banner", "BannerSub", "Toast"]) {
+                    "Ammo", "Reserve", "Rounds", "Weapon", "Status", "Banner", "BannerSub", "Toast"]) {
     hud[id] = document.getElementById("hud" + id);
   }
   const last = {};
@@ -1337,13 +1450,23 @@
     segments("IntegrityBar", Math.round((hp / CFG.hpMax) * 20), 20);
     hud.Integrity?.classList.toggle("low", hp < 35);
 
-    setHud("Ammo", String(player.ammo).padStart(2, "0"));
-    setHud("Reserve", String(player.reserve));
-    segments("Rounds", player.ammo, CFG.mag);
-    hud.Rounds?.classList.toggle("empty", player.ammo === 0);
+    const w = gun();
+    setHud("Weapon", w.name);
+    if (w.melee) {
+      setHud("Ammo", "--");
+      setHud("Reserve", "\u221E");
+      segments("Rounds", 0, 0);
+    } else {
+      const mag = player.mags[player.weapon];
+      setHud("Ammo", String(mag).padStart(2, "0"));
+      setHud("Reserve", String(player.reserves[player.weapon]));
+      segments("Rounds", mag, w.mag);
+      hud.Rounds?.classList.toggle("empty", mag === 0);
+    }
 
-    const status = player.reloadT > 0 ? "RECARREGANDO"
-                 : player.ammo === 0 ? "[R] RECARREGAR"
+    const status = player.swapT > 0 ? "TROCANDO"
+                 : player.reloadT > 0 ? "RECARREGANDO"
+                 : !w.melee && player.mags[player.weapon] === 0 ? "[R] RECARREGAR"
                  : player.slideT > 0 ? "DESLIZANDO"
                  : player.slideCd > 0 ? "DESLIZE EM RECARGA"
                  : player.grounded ? "[C] DESLIZE PRONTO" : "NO AR";
@@ -1434,7 +1557,10 @@
     player.x = start.x; player.y = start.y;
     player.z = floorUnder(player.x, player.y); player.vz = 0;
     player.yaw = -Math.PI / 2; player.pitch = 0;
-    player.hp = CFG.hpMax; player.ammo = CFG.mag; player.reserve = 150;
+    player.hp = CFG.hpMax;
+    player.weapon = 2; player.swapT = 0;
+    player.mags = WEAPONS.map((w) => w.mag || 0);
+    player.reserves = WEAPONS.map((w) => w.reserve0 || 0);
     player.reloadT = 0; player.fireCd = 0; player.slideT = 0; player.slideCd = 0;
     player.slideBoost = 1; player.slideLatch = false; player.lastHit = -99;
     Object.assign(game, {

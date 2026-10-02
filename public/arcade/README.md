@@ -71,6 +71,21 @@ vira barra luminosa atravessando a tela e rouba a cena inteira. Pelo mesmo
 motivo a praça sul é feita de plataformas separadas, não de degraus de ponta a
 ponta: degrau contínuo projeta uma reta que corta a tela ao meio.
 
+## Nitidez e distância
+
+Dois problemas que pareciam estéticos e eram técnicos:
+
+**Borrado.** A célula tinha tamanho fracionário em pixels, então todo retângulo
+e todo glifo caíam em meio pixel e o navegador reamostrava a tela inteira. Agora
+a célula é inteira em pixels de dispositivo, o buffer do canvas é múltiplo exato
+dela, e o CSS casa com o buffer — mapeamento 1:1, sem reamostragem.
+
+**Coisas sumindo ao longe.** A névoa escurecia até o preto, então a geometria
+distante se dissolvia no fundo. A regra correta é convergir pra cor do
+HORIZONTE: aí o objeto "sai da névoa" em vez de desaparecer. A rampa é gerada no
+boot (um índice de paleta por tom e nível), o que dá degradê liso em vez de
+quatro degraus grossos e permitiu dobrar o alcance de visão.
+
 ## Como o mundo é renderizado
 
 Raycaster de heightmap: cada célula do mapa guarda uma altura. Para cada coluna
@@ -112,6 +127,16 @@ E uma regra de nível: toda plataforma alta precisa de escada **dos dois lados**
 1.52 de uma vez é intransponível com `stepUp` de 0.42, e um desnível desses vira
 parede invisível que ilha metade do mapa.
 
+## Três armas, uma mesma montagem
+
+`1` faca, `2` pistola, `3` AK. Cada arma carrega a própria pose (posição, eixo e
+escala) junto do modelo, porque faca não se segura como fuzil. O estado de
+munição é por arma, então trocar não zera o pente da outra.
+
+A faca é corpo a corpo: alcance curto, sem munição, e exige que o alvo esteja
+de frente (produto escalar com a direção da visão) e na mesma altura. Derruba um
+DRIFT num golpe, o que dá a ela um papel real quando a munição acaba.
+
 ## A arma é 3D de verdade
 
 Silhueta chapada sempre parece adesivo, por mais detalhe que tenha. O que faz o
@@ -150,7 +175,7 @@ escuro, e é justamente a peça que identifica a arma.
 | Novo tipo de hostil | `TYPES` + arte em `ART` |
 | Composição das ondas | `startWave()` |
 | Nome das zonas do HUD | `ZONES` |
-| Modelo da arma | `AK3` (caixas 3D em proporção real) + `fillQuad` |
+| Armas | `WEAPONS` (stats + pose) e `MODEL_*` (caixas 3D) |
 | Efeitos sonoros | `sfx()` — WebAudio, sem asset |
 
 ## Pendências conhecidas
