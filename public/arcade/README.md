@@ -39,6 +39,38 @@ Consequências de implementação que sustentam tudo isso:
 - **Célula sólida vira `fillRect`**, não glifo: sem costura entre linhas e mais
   rápido que `fillText`. Caractere fica só para o detalhe.
 
+## O que faz a cena ter volume
+
+Cinco coisas, e nenhuma é "mais detalhe":
+
+**Luz direcional, não sombreamento por eixo.** O raycaster só sabe qual eixo o
+raio cruzou; combinando com o sentido do passo dá pra saber pra onde a face
+aponta, e cada orientação recebe seu valor (`FACE`). Sombrear pelo eixo deixava
+a parede rasante — que ocupa metade da tela — mais clara que a parede de frente,
+e a cena inteira lia como papelão chapado.
+
+**Dois passos de valor entre faces vizinhas.** Com índices de paleta vizinhos a
+diferença some. O volume vem do contraste ENTRE superfícies, não do detalhe
+dentro de cada uma.
+
+**Sombra acumulando na base.** As últimas linhas de cada face escurecem, o que
+assenta a parede no chão em vez de deixá-la boiando.
+
+**Costuras de painel.** Junta horizontal e montante vertical dão ESCALA: sem
+elas, uma parede de 20 células é uma mancha só e o olho não tem como medir
+tamanho nem distância.
+
+**Céu em gradiente ancorado no horizonte.** A faixa mais clara logo acima da
+linha do horizonte é o que faz a silhueta recortar. Fundo liso afunda tudo no
+mesmo preto.
+
+Duas regras de composição que vieram junto: o pátio precisa existir como plano
+(desenhado só com nós esparsos, o terço inferior da tela virava vazio e a cena
+flutuava), e acento esmeralda vai **tracejado** — linha cheia numa borda longa
+vira barra luminosa atravessando a tela e rouba a cena inteira. Pelo mesmo
+motivo a praça sul é feita de plataformas separadas, não de degraus de ponta a
+ponta: degrau contínuo projeta uma reta que corta a tela ao meio.
+
 ## Como o mundo é renderizado
 
 Raycaster de heightmap: cada célula do mapa guarda uma altura. Para cada coluna

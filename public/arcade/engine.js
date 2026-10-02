@@ -161,10 +161,16 @@
       rect(x, y + 3, x + 3, y + 3, 0.45);
     }
 
-    // Praça sul: degraus largos descendo até a doca
-    rect(12, 40, 59, 47, 0.76);
-    rect(14, 42, 57, 45, 1.14);
-    rect(20, 48, 51, 48, 0.38);
+    // Praça sul em PLATAFORMAS SEPARADAS, com vãos no nível do chão. Degrau
+    // de ponta a ponta projeta uma linha reta atravessando a tela inteira e
+    // achata a composição; vão também abre rota alternativa pra quem atravessa.
+    rect(14, 40, 29, 46, 0.76);
+    rect(33, 40, 45, 46, 1.14);
+    rect(49, 40, 58, 46, 0.76);
+    rect(16, 47, 27, 47, 0.38);
+    rect(35, 47, 43, 47, 0.38);
+    rect(51, 47, 56, 47, 0.38);
+    rect(34, 39, 44, 39, 0.76);
     for (const [x, y] of [[18, 54], [53, 54], [26, 60], [45, 60], [36, 57]]) {
       rect(x, y, x + 2, y + 2, 0.9);
       rect(x, y + 3, x + 2, y + 3, 0.45);
@@ -309,7 +315,16 @@
 
   /** Grade -> canvas. Célula sólida vira retângulo; o resto vira texto. */
   function flush() {
-    ctx.fillStyle = PALETTE[P.sky];
+    // Céu em gradiente ancorado no HORIZONTE, não cor chapada: a faixa mais
+    // clara logo acima da linha do horizonte é o que faz a silhueta da
+    // arquitetura recortar. Com fundo liso, tudo afunda no mesmo preto.
+    const hy = Math.max(0, Math.min(canvas.height, (S.horizon || S.rows / 2) * S.charH));
+    const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    g.addColorStop(0, "#090711");
+    if (hy > 0) g.addColorStop(Math.max(0.001, hy / canvas.height - 0.001), "#1d1830");
+    g.addColorStop(Math.min(0.999, hy / canvas.height + 0.001), "#0c0912");
+    g.addColorStop(1, "#070510");
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const buf = [];
@@ -359,6 +374,13 @@
 
   /** Degraus de escurecimento por distância — grossos de propósito: gradiente
    *  fino vira ruído, degrau largo lê como plano de profundidade. */
+  // Luz direcional fixa, vinda do noroeste. O raycaster só sabe QUAL EIXO ele
+  // cruzou; combinando com o sentido do passo dá pra saber pra onde a face
+  // aponta — e aí cada orientação ganha seu valor. Sombrear só pelo eixo
+  // deixava a parede rasante mais clara que a parede de frente.
+  //            oeste  leste  norte  sul
+  const FACE = [2, 0, 1, 0];
+
   function fade(dist) {
     return dist < 11 ? 0 : dist < 20 ? 1 : dist < 30 ? 2 : dist < 40 ? 3 : 4;
   }
@@ -369,6 +391,7 @@
     const planeX = -dirY * tanF, planeY = dirX * tanF;
     const vProj = S.vProj;
     const horizon = S.rows / 2 + cam.pitch;
+    S.horizon = horizon;
     const eyeZ = cam.eyeZ;
 
     for (let c = 0; c < S.cols; c++) {
@@ -420,12 +443,16 @@
               const edge =
                 (fx < thr && diff(-1, 0)) || (fx > 1 - thr && diff(1, 0)) ||
                 (fy < thr && diff(0, -1)) || (fy > 1 - thr && diff(0, 1));
-              put(c, r, SOLID, edge ? Math.max(P.ok0, P.ok1 - (f >> 1)) : Math.max(P.void_, P.s0 - (f >> 1)), dist);
+              put(c, r, SOLID, edge ? Math.max(P.ok0, P.ok1 - f) : Math.max(P.s0, P.s1 - (f >> 1)), dist);
             } else {
-              // pátio: praticamente vazio, só nós esparsos da malha
+              // O pátio PRECISA existir como plano. Desenhado só com nós
+              // esparsos, o terço inferior da tela virava vazio preto e a cena
+              // ficava flutuando sem apoio.
               const fx = wx - Math.floor(wx), fy = wy - Math.floor(wy);
-              const thr = Math.min(0.3, Math.max(0.015, dist * 0.014));
-              if (fx < thr && fy < thr) put(c, r, 43 /* + */, P.s2, dist);
+              const thr = Math.min(0.26, Math.max(0.012, dist * 0.011));
+              const line = fx < thr || fy < thr;
+              const ground = Math.max(P.void_, P.s0 - (f >> 1));
+              put(c, r, SOLID, line ? Math.min(P.s2, ground + 1) : ground, dist);
             }
           }
           if (r0 <= yBot) yBot = Math.min(yBot, r0 - 1);
@@ -442,13 +469,22 @@
           const f = fade(t);
           const walk = nextH < 1.9;                       // dá pra pisar em cima
           // UMA cor por face: é o contraste entre faces que desenha o volume
-          const tone = walk
-            ? Math.max(P.s0, P.s1 - (f >> 1))
-            : Math.max(P.s0, (side ? P.s1 : P.s2) - (f >> 1));
-          const lip = walk ? Math.max(P.ok0, P.ok2 - f) : Math.max(P.s1, P.s4 - f);
+          // Separação de VALOR por orientação, com dois passos de distância
+          // entre face de frente e face de lado. Antes elas eram índices
+          // vizinhos na paleta: quase a mesma cor, e por isso a cena inteira
+          // lia como papelão chapado.
+          const facing = side === 0 ? (stepX > 0 ? 0 : 1) : (stepY > 0 ? 2 : 3);
+          const baseTone = (walk ? P.s1 : P.s2) + FACE[facing];
+          const tone = Math.max(P.s0, baseTone - f);
+          const hitU0 = side ? cam.x + rayX * t : cam.y + rayY * t;
+          // Lábio TRACEJADO. Linha cheia numa borda longa vira barra luminosa de
+          // ponta a ponta e rouba a cena; tracejado marca a mesma informação
+          // ("dá pra subir aqui") sem competir com a arquitetura.
+          const dash = (Math.floor(hitU0 * 1.6) & 1) === 0;
+          const lip = walk
+            ? (dash ? (t < 9 ? P.ok1 : P.ok0) : Math.max(P.s1, P.s3 - f))
+            : Math.max(P.s1, P.s5 - f);
           const capOn = Math.ceil(yTop) >= 0;
-
-          const hitU = side ? cam.x + rayX * t : cam.y + rayY * t;
           const tv = t / vProj;
 
           // uma linha parcial ACIMA do lábio suaviza o recorte contra o céu,
@@ -457,19 +493,33 @@
             const frac = r0 - yTop;
             if (frac > 0.08) put(c, r0 - 1, SOLID, lip, t, Math.round(Math.min(1, frac) * 255));
           }
+          const faceH = Math.max(1, r1 - r0);
           for (let r = r1; r >= r0; r--) {
             if (r === r0 && capOn) { put(c, r, SOLID, lip, t); continue; }
             const worldZ = eyeZ + (horizon - r) * tv;
-            // detalhe esparso: linha de painel, não textura contínua
-            // Detalhe de superfície são FRAGMENTOS HEX, não tracinho genérico:
-            // o mundo é o runtime do agente, então a parede tem endereço.
-            const mark = hash((hitU * 2) | 0, (worldZ * 3) | 0);
-            if (mark < 60 && t < 26) {
+            // sombra acumulando na base da face: é o que dá peso e assenta a
+            // parede no chão em vez de deixá-la boiando
+            const down = (r - r0) / faceH;
+            let shaded = Math.max(P.s0, tone - (down > 0.82 ? 2 : down > 0.6 ? 1 : 0));
+            // Costuras de painel dão ESCALA ao plano. Sem elas uma parede de
+            // 20 células é uma mancha só, e o olho não tem como medir o
+            // tamanho nem a distância dela.
+            if (t < 24) {
+              const fz = worldZ * 1.8 - Math.floor(worldZ * 1.8);
+              const fu = hitU0 - Math.floor(hitU0);
+              if (fz < 0.1) shaded = Math.max(P.s0, shaded - 1);          // junta horizontal
+              else if (fu < 0.05 || fu > 0.95) shaded = Math.min(P.s5, shaded + 1);  // montante
+            }
+            // Fragmento hex como etiqueta de superfície. Quantização grossa
+            // fazia eles empilharem em blocos retangulares de ruído.
+            // quantização fina: grossa demais, cada etiqueta vira um bloco de
+            // ~6x6 células e lê como ruído carimbado na parede
+            const mark = hash((hitU0 * 22) | 0, (worldZ * 26) | 0);
+            if (mark < 22 && t < 15 && !side) {
               const glyph = HEX[mark % HEX.length];
-              const k = ((hitU * 2) | 0) & 1;
-              put(c, r, glyph.charCodeAt(k), Math.min(P.s5, tone + 2), t);
+              put(c, r, glyph.charCodeAt(((hitU0 * 22) | 0) & 1), Math.min(P.s5, shaded + 2), t);
             } else {
-              put(c, r, SOLID, tone, t);
+              put(c, r, SOLID, shaded, t);
             }
           }
           if (r0 <= yBot) yBot = Math.min(yBot, r0 - 1);
