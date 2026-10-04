@@ -100,76 +100,55 @@ isso que cobertura vale igual para a bala e para a linha de visão da IA.
 
 ## Nível e navegação
 
-O mapa é um piso de racks: fileiras longas e paralelas com corredor entre elas,
-uma passarela cruzando tudo e uma praça ao sul. Corredor dá linha de tiro
-comprida; praça dá respiro. Construído por operações (`rect`, `ring`, `stairs`),
-não por arte ASCII.
+O mapa tem distritos com caráter próprio, não uma grade regular:
+
+- **CORE ZIGGURAT** — torre alta no centro, com anel de passarela e uma única
+  escada de acesso pelo sul. Um ombro mais baixo serve de posto de tiro. É o
+  marco que orienta o mapa e o ponto mais disputado. (A primeira versão era um
+  zigurate de degraus concêntricos: visto do chão vira listra paralela e some
+  a leitura de volume — massa vertical com acesso único lê muito melhor.)
+- **STACK BLOCK** — quarteirão denso de blocos com alturas diferentes e becos
+  entre eles. Combate curto, muita quina.
+- **TERRACE CLIMB** — quatro faixas de 0.38 encadeadas subindo até a torre do
+  canto. A subida é contínua e visível de longe.
+- **SEALED ROOMS** — salas fechadas com porta. Contraponto do pátio aberto:
+  lá dentro o tiro longo não vale e a faca passa a fazer sentido.
+- **SOUTH YARD** — pátio com rampa diagonal pra uma passarela que domina a
+  praça mas não tem saída rápida.
+
+Entulho espalhado por RNG com semente fixa, porque validação de navegabilidade
+precisa testar o mesmo mapa que o jogador recebe. Caixas em 0.38 (sobe andando)
+e 0.72 (sobe pulando) — 0.45 ficava logo acima do degrau e só atrapalhava.
 
 Navegação é campo de fluxo BFS a partir da célula do player, recalculado 4x/s.
-Três invariantes que o código garante — cada um veio de um bug que o teste
+Quatro invariantes que o código garante — cada um veio de um bug que o teste
 headless pegou, todos da mesma família (**a navegação mentindo sobre o que o
 corpo consegue fazer**):
 
 1. **O ator não é um ponto.** `bodyH` guarda a altura vista por um corpo de raio
    `CFG.radius` no centro de cada célula, e é isso — não a altura crua — que a
-   busca usa. Sem isso, a rota aprova corredor onde o inimigo não cabe: ele mira
-   o centro da célula, trava na quina e o desvio o joga pra fora da rota.
+   busca usa. Sem isso, a rota aprova corredor onde o inimigo não cabe.
 2. **Fluxo menor não significa alcançável.** O vizinho pode ter sido alcançado
    pelo outro lado. `flowStep` só aceita vizinho que respeite `stepUp` a partir
-   de onde o bicho está — senão ele escolhe uma face 0.76 acima e empurra parede
-   pra sempre.
-3. **Todo spawn precisa de rota provada.** `reachable()` faz flood fill com as
+   de onde o bicho está.
+3. **Quem decide é o degrau, não a altura absoluta.** Havia um corte tratando
+   qualquer superfície acima de 2 como parede: plataforma alcançável por escada
+   ficava fora do mapa de navegação e, pior, com o player em cima dela o campo
+   de fluxo abortava inteiro e todo inimigo congelava.
+4. **Todo spawn precisa de rota provada.** `reachable()` faz flood fill com as
    mesmas regras de passo e `placeSpawns()` só aceita célula conectada ao
-   início, numa faixa de distância (não no ponto mais longe, senão a onda leva
-   meio minuto andando antes de virar jogo).
+   início, numa faixa de distância.
 
 E uma regra de nível: toda plataforma alta precisa de escada **dos dois lados**.
 1.52 de uma vez é intransponível com `stepUp` de 0.42, e um desnível desses vira
 parede invisível que ilha metade do mapa.
-
-## Três armas, uma mesma montagem
-
-`1` faca, `2` pistola, `3` AK. Cada arma carrega a própria pose (posição, eixo e
-escala) junto do modelo, porque faca não se segura como fuzil. O estado de
-munição é por arma, então trocar não zera o pente da outra.
-
-A faca é corpo a corpo: alcance curto, sem munição, e exige que o alvo esteja
-de frente (produto escalar com a direção da visão) e na mesma altura. Derruba um
-DRIFT num golpe, o que dá a ela um papel real quando a munição acaba.
-
-## A arma é 3D de verdade
-
-Silhueta chapada sempre parece adesivo, por mais detalhe que tenha. O que faz o
-olho ler volume é **ver duas faces ao mesmo tempo** com iluminação diferente.
-
-Então a AK é um modelo de 15 caixas em espaço próprio (x do cano à soleira, y
-pra cima, z na largura), com medidas tiradas das proporções reais. Cada caixa
-tem as 6 faces projetadas, as viradas pra trás descartadas, e a cor de cada face
-sai da normal contra uma luz fixa — topo claro, lateral médio, base escuro. O
-preenchimento é por varredura de coluna, não por amostragem ao longo das arestas
-(amostrar deixa buraco em quad diagonal e o mundo aparece por dentro da arma).
-
-O posicionamento é resolvido de trás pra frente: eu digo onde a boca e a soleira
-devem cair na tela e converto de volta pra espaço de câmera. Tentar adivinhar o
-vetor da arma direto põe ela no meio da tela — foi o que aconteceu na primeira
-tentativa.
-
-A boca cai junto da mira e o cano converge pro centro, que é de onde o tiro
-sai — arma apontando pra um canto qualquer denuncia que é adesivo. Mas o eixo
-não pode ficar paralelo demais à visão, senão sobra só a coronha gigante e o
-cano some.
-
-Dois detalhes valem mais que geometria fina para o reconhecimento: **madeira
-clara contra metal escuro** (rampa de tom por material, não deslocamento numa
-rampa só) e um **carregador que precisa LER** — em tom escuro ele some no fundo
-escuro, e é justamente a peça que identifica a arma.
 
 ## Onde mexer
 
 | Quero | Símbolo |
 |---|---|
 | Movimento, dano, cadência | `CFG` |
-| Layout do nível | `buildLevel()` |
+| Layout do nível | `buildLevel()` + `room` / `stairDiag` / `stairs` |
 | Paleta | `PALETTE` + o mapa de papéis em `P` |
 | Fragmentos de superfície | `HEX` |
 | Novo tipo de hostil | `TYPES` + arte em `ART` |

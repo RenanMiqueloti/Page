@@ -120,55 +120,101 @@
     }
   }
 
+  /** Sala fechada com portas: parede em volta, chão dentro, vãos onde pedido.
+   *  `doors` é uma lista de [x, y] que vira abertura na parede. */
+  function room(x0, y0, x1, y1, h, doors) {
+    rect(x0, y0, x1, y1, 0);
+    ring(x0, y0, x1, y1, h);
+    for (const [dx, dy] of doors) rect(dx, dy, dx, dy, 0);
+  }
+
+  /** Escada que anda na diagonal enquanto sobe: dois cantos do nível ligados
+   *  sem precisar de um corredor reto, que é o que torna o relevo legível. */
+  function stairDiag(x, y, dx, dy, n, from, rise, w) {
+    for (let i = 0; i < n; i++) {
+      const cx = x + dx * i, cy = y + dy * i;
+      rect(cx, cy, cx + (dy ? w - 1 : 0), cy + (dx ? w - 1 : 0), from + rise * i);
+    }
+  }
+
+  // RNG com semente: entulho espalhado precisa ser o MESMO em toda partida,
+  // senão a validação de navegabilidade testa um mapa e o jogador recebe outro.
+  let seed = 20260117;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+
   function buildLevel() {
     height.fill(0);
     ring(0, 0, MAP.w - 1, MAP.h - 1, 7);
 
-    // Piso de racks, não pátio com torres: fileiras longas e paralelas com
-    // corredor entre elas. Corredor dá linha de tiro comprida e tensão; a
-    // praça ao sul dá respiro. É a silhueta que separa este mapa de um pátio.
-    const RACK_H = 2.9;
-    for (let bank = 0; bank < 2; bank++) {
-      const x0 = bank === 0 ? 8 : 40;
-      for (let i = 0; i < 4; i++) {
-        const x = x0 + i * 7;
-        rect(x, 8, x + 3, 33, RACK_H);
-        rect(x, 8, x + 3, 8, RACK_H * 0.74);       // cabeceira mais baixa
-        rect(x, 33, x + 3, 33, RACK_H * 0.74);
-        rect(x + 1, 14, x + 2, 14, 0);             // vãos de passagem
-        rect(x + 1, 24, x + 2, 24, 0);
-      }
+    // ------------------------------------------------------------------
+    // NÚCLEO: torre alta com anel de passarela e uma escada só. Zigurate de
+    // degraus concêntricos vira listra paralela quando visto do chão — massa
+    // vertical com acesso único lê como marco e ainda cria um ponto disputado.
+    rect(29, 29, 43, 43, 1.52);          // anel de passarela
+    rect(32, 32, 40, 40, 3.6);           // torre central, inescalável
+    rect(32, 32, 36, 35, 2.28);          // ombro mais baixo: posto de tiro
+    rect(31, 32, 31, 36, 1.90);          // degrau do anel pro ombro
+    rect(30, 44, 42, 45, 0.76);          // soleira sul
+    stairs(34, 44, 38, 47, 1.14, -0.38, "y");   // única subida, pelo sul
+    rect(44, 33, 46, 39, 1.14);          // saliência leste, pra sair pulando
+    rect(26, 33, 28, 39, 1.14);          // e oeste
+
+    // ------------------------------------------------------------------
+    // NOROESTE: quarteirão denso. Blocos de alturas diferentes com becos
+    // entre eles — combate curto, muita quina, silhueta irregular.
+    for (const [x0, y0, x1, y1, h] of [
+      [5, 5, 11, 10, 2.6], [14, 4, 19, 9, 3.4], [22, 6, 26, 11, 1.9],
+      [6, 13, 12, 18, 3.0], [15, 13, 20, 17, 2.2], [23, 14, 27, 19, 3.6],
+      [5, 22, 10, 26, 2.4], [13, 21, 18, 25, 3.2], [8, 30, 13, 35, 2.8],
+      [5, 38, 11, 42, 2.0],
+    ]) {
+      rect(x0, y0, x1, y1, h);
+      rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, h * 0.8);   // recuo no topo
     }
 
-    // Passarela leste-oeste cruzando os dois bancos, com escada nas pontas e
-    // no meio — toda plataforma alta precisa de acesso dos dois lados.
-    rect(1, 19, 70, 20, 1.52);
-    stairs(4, 21, 8, 24, 1.14, -0.38, "y");
-    stairs(63, 21, 67, 24, 1.14, -0.38, "y");
-    stairs(4, 15, 8, 18, 0.00, 0.38, "y");     // norte, oeste
-    stairs(63, 15, 67, 18, 0.00, 0.38, "y");   // norte, leste
-    stairs(35, 15, 38, 18, 0.00, 0.38, "y");
-    stairs(35, 21, 38, 24, 1.14, -0.38, "y");
+    // ------------------------------------------------------------------
+    // NORDESTE: terraços subindo até a torre do canto. Quatro faixas de
+    // 0.38 que se encadeiam, então a subida é contínua e visível de longe.
+    rect(46, 4, 66, 8, 0.38);
+    rect(50, 9, 66, 12, 0.76);
+    rect(54, 13, 66, 16, 1.14);
+    rect(58, 17, 66, 20, 1.52);
+    rect(62, 2, 68, 7, 4.6);                           // torre do canto
+    rect(63, 3, 67, 6, 3.7);
+    rect(46, 24, 52, 29, 2.4);
+    rect(57, 25, 63, 31, 3.1);
 
-    // Blocos de serviço soltos no corredor central
-    for (const [x, y, h] of [[34, 10, 1.9], [34, 29, 1.9], [30, 38, 0.9], [41, 38, 0.9]]) {
-      rect(x, y, x + 3, y + 2, h);
-      rect(x, y + 3, x + 3, y + 3, 0.45);
-    }
+    // ------------------------------------------------------------------
+    // SUDOESTE: salas fechadas com porta. É o contraponto do pátio aberto —
+    // dentro delas o tiro longo não vale e a faca passa a fazer sentido.
+    room(4, 44, 15, 52, 3.2, [[15, 48], [10, 44], [15, 49]]);
+    room(4, 55, 13, 64, 3.2, [[9, 55], [13, 60], [8, 55]]);
+    room(18, 47, 28, 56, 3.2, [[18, 51], [23, 56], [18, 52]]);
 
-    // Praça sul em PLATAFORMAS SEPARADAS, com vãos no nível do chão. Degrau
-    // de ponta a ponta projeta uma linha reta atravessando a tela inteira e
-    // achata a composição; vão também abre rota alternativa pra quem atravessa.
-    rect(14, 40, 29, 46, 0.76);
-    rect(33, 40, 45, 46, 1.14);
-    rect(49, 40, 58, 46, 0.76);
-    rect(16, 47, 27, 47, 0.38);
-    rect(35, 47, 43, 47, 0.38);
-    rect(51, 47, 56, 47, 0.38);
-    rect(34, 39, 44, 39, 0.76);
-    for (const [x, y] of [[18, 54], [53, 54], [26, 60], [45, 60], [36, 57]]) {
-      rect(x, y, x + 2, y + 2, 0.9);
-      rect(x, y + 3, x + 2, y + 3, 0.45);
+    // ------------------------------------------------------------------
+    // SUDESTE: pátio aberto com rampa diagonal subindo pra passarela alta,
+    // que domina a praça mas não tem saída rápida.
+    stairDiag(50, 62, 1, -1, 5, 0.0, 0.38, 3);
+    rect(55, 52, 66, 58, 1.52);
+    rect(58, 46, 66, 51, 1.90);
+    rect(46, 60, 52, 65, 0.76);
+    rect(44, 36, 50, 41, 1.14);
+    stairs(44, 42, 50, 44, 0.76, -0.38, "y");
+
+    // ligação norte<->sul pelo lado oeste, pra não depender só do centro
+    stairs(16, 36, 20, 39, 1.14, -0.38, "y");
+    rect(14, 30, 20, 35, 1.52);
+
+    // ------------------------------------------------------------------
+    // Entulho: caixas baixas espalhadas em pontos abertos. Dão cobertura
+    // parcial e quebram a leitura de "chão vazio".
+    for (let i = 0; i < 26; i++) {
+      const x = 4 + ((rnd() * 62) | 0), y = 4 + ((rnd() * 62) | 0);
+      if (heightAt(x + 0.5, y + 0.5) > 0.05) continue;
+      const w = rnd() < 0.3 ? 2 : 1;
+      // 0.38 sobe andando, 0.72 sobe pulando: os dois são cobertura que
+      // dá pra usar. 0.45 ficava logo acima do degrau e só atrapalhava.
+      rect(x, y, x + w, y + w, rnd() < 0.5 ? 0.38 : 0.72);
     }
 
     start = { x: 36.5, y: 63.5 };
@@ -191,8 +237,11 @@
         if (nx < 1 || ny < 1 || nx >= MAP.w - 1 || ny >= MAP.h - 1) continue;
         const ni = ny * MAP.w + nx;
         if (seen[ni]) continue;
+        // Sem teto de altura absoluto: quem decide é o DEGRAU. O corte em 2
+        // tratava como parede qualquer superfície alta, então plataforma que
+        // se alcança por escada ficava fora do mapa de navegação.
         const hn = bodyH[ni];
-        if (hn >= 2 || Math.abs(hc - hn) > CFG.stepUp) continue;   // ida E volta
+        if (Math.abs(hc - hn) > CFG.stepUp) continue;   // ida E volta
         seen[ni] = 1; q[tail++] = ni;
       }
     }
@@ -939,7 +988,8 @@
     const sx = player.x | 0, sy = player.y | 0;
     if (!inside(sx, sy)) return;
     const s0 = sy * MAP.w + sx;
-    if (bodyH[s0] >= 2) return;
+    // Nada de abortar por altura: com o player numa plataforma alta isso
+    // zerava o campo e TODO inimigo congelava no lugar.
     flow[s0] = 0; fq[0] = s0;
     let head = 0, tail = 1;
     while (head < tail) {
@@ -952,7 +1002,7 @@
         const ni = ny * MAP.w + nx;
         if (flow[ni] !== -1) continue;
         const hn = bodyH[ni];
-        if (hn >= 2 || hc - hn > CFG.stepUp) continue;
+        if (hc - hn > CFG.stepUp) continue;
         flow[ni] = d + 1; fq[tail++] = ni;
       }
     }
@@ -1399,14 +1449,12 @@
 
   // ------------------------------------------------------------------- HUD
   const ZONES = [
-    { x0: 0, y0: 0, x1: 71, y1: 7, name: "INGRESS EDGE" },
-    { x0: 0, y0: 8, x1: 32, y1: 18, name: "RACK BANK A" },
-    { x0: 39, y0: 8, x1: 71, y1: 18, name: "RACK BANK B" },
-    { x0: 0, y0: 19, x1: 71, y1: 21, name: "TRACE CATWALK" },
-    { x0: 0, y0: 22, x1: 32, y1: 36, name: "VECTOR INDEX" },
-    { x0: 39, y0: 22, x1: 71, y1: 36, name: "TOOL GATEWAY" },
-    { x0: 0, y0: 37, x1: 71, y1: 50, name: "CONTEXT WINDOW" },
-    { x0: 0, y0: 51, x1: 71, y1: 71, name: "EGRESS DOCK" },
+    { x0: 0, y0: 0, x1: 30, y1: 27, name: "STACK BLOCK" },
+    { x0: 44, y0: 0, x1: 71, y1: 22, name: "TERRACE CLIMB" },
+    { x0: 28, y0: 28, x1: 44, y1: 44, name: "CORE ZIGGURAT" },
+    { x0: 0, y0: 42, x1: 30, y1: 71, name: "SEALED ROOMS" },
+    { x0: 44, y0: 44, x1: 71, y1: 71, name: "SOUTH YARD" },
+    { x0: 44, y0: 23, x1: 71, y1: 43, name: "TOOL GATEWAY" },
   ];
   const zoneName = () => {
     const x = player.x | 0, y = player.y | 0;
